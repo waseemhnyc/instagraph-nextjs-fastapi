@@ -1,22 +1,41 @@
-# next-template
+# InstaGraph 🌐 Next JS 
 
-A Next.js 13 template for building apps with Radix UI and Tailwind CSS.
+Original project and inspiration: [<a href="https://twitter.com/yoheinakajima">Yohei Nakajima</a>](https://twitter.com/yoheinakajima) - [<a href="https://github.com/yoheinakajima/instagraph">Instagraph</a>](https://github.com/yoheinakajima/instagraph)
 
-## Usage
+Project made with:
+- [<a href="https://twitter.com/shadcn">Shadcn</a>](https://twitter.com/shadcn) - [<a href="https://github.com/shadcn/next-template">Next JS Template</a>](https://github.com/shadcn/next-template)
+- Vercel AI SDK
 
+## Installation 🛠️
+
+1. Clone the repository
 ```bash
-npx create-next-app -e https://github.com/shadcn/next-template
+git clone https://github.com/waseemhnyc/instagraph-nextjs
+```
+2. Navigate to the project directory
+```bash
+cd instagraph-nextjs
+```
+3. Install packages
+```bash
+yarn
+```
+4. Set environment variables
+```bash
+OPENAI_API_KEY=your-api-key-here
+```
+5. Run Next JS app
+```bash
+yarn run dev
 ```
 
-## Features
+## Usage 🎉
 
-- Next.js 13 App Directory
-- Radix UI Primitives
-- Tailwind CSS
-- Icons from [Lucide](https://lucide.dev)
-- Dark mode with `next-themes`
-- Tailwind CSS class sorting, merging and linting.
+Web Interface
+- Open your web browser and navigate to `http://localhost:3000/`.
+- Type your text or paste a URL in the input box.
+- Click "Submit" and wait for the magic to happen!
 
-## License
+## License 📝
 
-Licensed under the [MIT license](https://github.com/shadcn/ui/blob/main/LICENSE.md).
+MIT License. See LICENSE.md for more information.
