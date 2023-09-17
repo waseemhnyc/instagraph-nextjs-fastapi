@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    appDir: true,
-  },
   rewrites: async () => {
     return [
       {
@@ -17,4 +13,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+module.exports = nextConfig
