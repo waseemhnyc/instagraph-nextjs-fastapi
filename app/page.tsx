@@ -32,20 +32,10 @@ export default function IndexPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-  const [inputValue, setInputValue] = useState<string>('');
 
-  const onInit = (reactFlowInstance: any) => setReactFlowInstance(reactFlowInstance);
+   const onInit = (reactFlowInstance: any) => setReactFlowInstance(reactFlowInstance);
 
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), []);
-
-  const onSubmit = async () => {
-    try {
-      const response = await axios.post('/api/robotIdea', nodes);
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     <section className="container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
@@ -53,11 +43,9 @@ export default function IndexPage() {
         <div className="text-sm font-semibold tracking-tight">
           Enter a URL or a string of text:
         </div>
-        <div className="w-full flex justify-between items-center">
+        <form className='w-full flex justify-between items-center'>
           <Input
             type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
             placeholder=""
             className="mr-3"
           />
@@ -68,7 +56,7 @@ export default function IndexPage() {
             >
               Submit
           </Link>
-        </div>
+          </form>
       </div>
       <div className="flex justify-between">
           <div className="position-absolute w-full h-[700px]">
@@ -99,4 +87,3 @@ export default function IndexPage() {
     </section>
   )
 }
-

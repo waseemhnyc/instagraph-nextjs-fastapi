@@ -34,3 +34,7 @@ yarn-error.log*
 
 .contentlayer
 .env
+
+# python
+venv/
+__pycache__/

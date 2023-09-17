@@ -38,4 +38,4 @@ Web Interface
 
 ## License 📝
 
-MIT License. See LICENSE.md for more information.
+MIT License. See LICENSE for more information.
