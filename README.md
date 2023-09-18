@@ -4,7 +4,7 @@ Original project and inspiration: [<a href="https://twitter.com/yoheinakajima">Y
 
 Project made with:
 - [<a href="https://twitter.com/shadcn">Shadcn</a>](https://twitter.com/shadcn) - [<a href="https://github.com/shadcn/next-template">Next JS Template</a>](https://github.com/shadcn/next-template)
-- Vercel AI SDK
+- [<a href="https://reactflow.dev/">React Flow</a>](https://reactflow.dev/)
 
 ## Installation 🛠️
 
