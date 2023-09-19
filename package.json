@@ -16,12 +16,15 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
+    "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/react-slot": "^1.0.2",
+    "@types/html2canvas": "^1.0.0",
     "@vercel/analytics": "^1.0.2",
     "axios": "^1.5.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
     "concurrently": "^8.2.1",
+    "html2canvas": "^1.4.1",
     "lucide-react": "0.105.0-alpha.4",
     "next": "^13.4.8",
     "next-themes": "^0.2.1",
@@ -31,7 +34,8 @@
     "reactflow": "^11.8.3",
     "sharp": "^0.31.3",
     "tailwind-merge": "^1.13.2",
-    "tailwindcss-animate": "^1.0.6"
+    "tailwindcss-animate": "^1.0.6",
+    "use-react-screenshot": "^3.0.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^3.7.2",

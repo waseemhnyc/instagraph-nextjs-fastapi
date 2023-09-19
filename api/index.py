@@ -1,21 +1,28 @@
 import os
+from urllib.parse import urlparse
 import requests
 import openai
 from bs4 import BeautifulSoup
 from flask import Flask, jsonify, request
 import json
+import re
 
-from flask import Flask
 app = Flask(__name__)
 
 # Load environment variables from .env file
-from dotenv import load_dotenv
-load_dotenv()
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 # Set your OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
-response_data = ""
+openai_api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = openai_api_key
 
+def is_url(input_string):
+    try:
+        result = urlparse(input_string)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
 
 # Function to scrape text from a website
 def scrape_text_from_url(url):
@@ -25,153 +32,146 @@ def scrape_text_from_url(url):
     soup = BeautifulSoup(response.text, "html.parser")
     paragraphs = soup.find_all("p")
     text = " ".join([p.get_text() for p in paragraphs])
-    print("web scrape done")
     return text
 
 
-@app.route("/get_response_data", methods=["POST"])
-def get_response_data():
-    global response_data
-    user_input = request.json.get("user_input", "")
-    if not user_input:
-        return jsonify({"error": "No input provided"}), 400
-    print("starting openai call")
-    completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k",
-        messages=[
-            {
-                "role": "user",
-                "content": f"Help me understand following by describing as a detailed knowledge graph: {user_input}",
-            }
-        ],
-        functions=[
-            {
-                "name": "knowledge_graph",
-                "description": "Generate a knowledge graph with entities and relationships. Use the colors to help differentiate between different node or edge types/categories. Always provide light pastel colors that work well with black font.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "metadata": {
-                            "type": "object",
-                            "properties": {
-                                "createdDate": {"type": "string"},
-                                "lastUpdated": {"type": "string"},
-                                "description": {"type": "string"},
-                            },
-                        },
-                        "nodes": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "id": {"type": "string"},
-                                    "label": {"type": "string"},
-                                    "type": {"type": "string"},
-                                    "color": {"type": "string"},  # Added color property
-                                    "properties": {
-                                        "type": "object",
-                                        "description": "Additional attributes for the node",
-                                    },
-                                },
-                                "required": [
-                                    "id",
-                                    "label",
-                                    "type",
-                                    "color",
-                                ],  # Added color to required
-                            },
-                        },
-                        "edges": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "from": {"type": "string"},
-                                    "to": {"type": "string"},
-                                    "relationship": {"type": "string"},
-                                    "direction": {"type": "string"},
-                                    "color": {"type": "string"},  # Added color property
-                                    "properties": {
-                                        "type": "object",
-                                        "description": "Additional attributes for the edge",
-                                    },
-                                },
-                                "required": [
-                                    "from",
-                                    "to",
-                                    "relationship",
-                                    "color",
-                                ],  # Added color to required
-                            },
-                        },
-                    },
-                    "required": ["nodes", "edges"],
-                },
-            }
-        ],
-        function_call={"name": "knowledge_graph"},
-    )
-
-    response_data = completion.choices[0]["message"]["function_call"]["arguments"]
-    print(response_data)
+def correct_json(response_data):
+    """
+    Corrects the JSON response from OpenAI to be valid JSON
+    """
+    response_data = re.sub(
+        r',\s*}', '}',
+        re.sub(r',\s*]', ']',
+               re.sub(r'(\w+)\s*:', r'"\1":', response_data)))
     return response_data
 
 
-# Function to visualize the knowledge graph using Graphviz
-@app.route("/graphviz", methods=["POST"])
-def visualize_knowledge_graph_with_graphviz():
-    global response_data
-    dot = Digraph(comment="Knowledge Graph")
-    response_dict = json.loads(response_data)
-
-    # Add nodes to the graph
-    for node in response_dict.get("nodes", []):
-        dot.node(node["id"], f"{node['label']} ({node['type']})")
-
-    # Add edges to the graph
-    for edge in response_dict.get("edges", []):
-        dot.edge(edge["from"], edge["to"], label=edge["relationship"])
-
-    # Render and visualize
-    dot.render("knowledge_graph.gv", view=False)
-    # Render to PNG format and save it
-    dot.format = "png"
-    dot.render("static/knowledge_graph", view=False)
-
-    # Construct the URL pointing to the generated PNG
-    png_url = f"{request.url_root}static/knowledge_graph.png"
-
-    return jsonify({"png_url": png_url}), 200
-
-
-@app.route("/get_graph_data", methods=["POST"])
+@app.route("/api/get_graph_data", methods=["POST"])
 def get_graph_data():
-    try:
-        global response_data
-        print(response_data)
-        response_dict = json.loads(response_data)
-        # Assume response_data is global or passed appropriately
-        nodes = [
-            {
-                "data": {
-                    "id": node["id"],
-                    "label": node["label"],
-                    "color": node.get("color", "defaultColor"),
+    try: 
+        user_input = request.json.get("user_input", "")
+        if not user_input:
+            return jsonify({"error": "No input provided"}), 400
+        
+        # Check if the user input is a URL
+        if is_url(user_input):
+            user_input = scrape_text_from_url(user_input)
+
+        completion = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Help me understand following by describing as a detailed knowledge graph: {user_input}",
                 }
-            }
-            for node in response_dict["nodes"]
-        ]
-        edges = [
-            {
-                "data": {
-                    "source": edge["from"],
-                    "target": edge["to"],
-                    "label": edge["relationship"],
-                    "color": edge.get("color", "defaultColor"),
+            ],
+            functions=[
+                {
+                    "name": "knowledge_graph",
+                    "description": "Generate a knowledge graph with entities and relationships. Use the colors to help differentiate between different node or edge types/categories. Always provide light pastel colors that work well with black font. Each node is about 300px wide and 50px tall. The nodes should have positions that makes the graph readable and understandable. The main node should be in the center and the other nodes around it in a radial pattern. Space out the nodes and edges so that the graph is not cluttered. All nodes must connect to atleast one other node.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "metadata": {
+                                "type": "object",
+                                "properties": {
+                                    "createdDate": {"type": "string"},
+                                    "lastUpdated": {"type": "string"},
+                                    "description": {"type": "string"},
+                                },
+                            },
+                            "nodes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {"type": "string"},
+                                        "label": {"type": "string"},
+                                        "type": {"type": "string"},
+                                        "color": {"type": "string"},  # Added color property
+                                        "properties": {
+                                            "type": "object",
+                                            "description": "Additional attributes for the node",
+                                        },
+                                        "position_x": {"type": "number"},
+                                        "position_y": {"type": "number"},
+                                    },
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "type",
+                                        "color",
+                                        "position_x",
+                                        "position_y"
+                                    ],  # Added color to required
+                                },
+                            },
+                            "edges": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "from": {"type": "string"},
+                                        "to": {"type": "string"},
+                                        "relationship": {"type": "string"},
+                                        "direction": {"type": "string"},
+                                        "color": {"type": "string"},  # Added color property
+                                        "properties": {
+                                            "type": "object",
+                                            "description": "Additional attributes for the edge",
+                                        },
+                                    },
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "relationship",
+                                        "color",
+                                    ],  # Added color to required
+                                },
+                            },
+                        },
+                        "required": ["nodes", "edges"],
+                    },
                 }
-            }
-            for edge in response_dict["edges"]
-        ]
+            ],
+            function_call={"name": "knowledge_graph"},
+        )
+        response_data = completion.choices[0]["message"]["function_call"]["arguments"]
+        response_data = correct_json(response_data)
+        # print(response_data) this has direction: "Outgoing" for edges
+        nodes, edges = create_nodes_edges(response_data)
         return jsonify({"elements": {"nodes": nodes, "edges": edges}})
-    except:
-        return jsonify({"elements": {"nodes": [], "edges": []}})
+    except Exception as e:
+        return jsonify({"error": "Something went wrong"}), 500
+
+def create_nodes_edges(data):
+    try:
+        response_dict = json.loads(data)
+        nodes = []
+        edges = []
+
+        for node in response_dict["nodes"]:
+            nodes.append({
+                "id": node["id"],
+                "position": {"x": node["position_x"], "y": node["position_y"]},
+                "style": {"background": node["color"]},
+                "data": {"label": node["label"]},
+                "draggable": True,
+                "selectable": False,
+                "deletable": False
+            })
+
+        for edge in response_dict["edges"]:
+            edges.append({
+                "id": f"{edge['from']}-{edge['to']}",
+                "source": edge["from"],
+                "target": edge["to"],
+                "label": edge["relationship"],
+                "type": "default",
+                "style": {"stroke": edge["color"]}
+            })
+
+        return nodes, edges
+    except Exception as e:
+        print(e)
+        return [], []
