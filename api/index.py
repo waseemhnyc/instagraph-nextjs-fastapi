@@ -10,11 +10,15 @@ import re
 app = Flask(__name__)
 
 # Load environment variables from .env file
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv())
+try:
+
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv())
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+except:
+    openai_api_key = os.environ.get('OPENAI_API_KEY')
 
 # Set your OpenAI API key
-openai_api_key = os.getenv("OPENAI_API_KEY")
 openai.api_key = openai_api_key
 
 def is_url(input_string):

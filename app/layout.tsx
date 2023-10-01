@@ -52,7 +52,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <div className="container grid items-center gap-6 pb-8 pt-6 md:py-6 mt-6 mb-3 rounded-md border">
                 <div className="sm:text-sm md:text-md tracking-tight">
                   <h1 className="text-lg font-bold">
-                    Welcome! Give InstaGraph a try below.
+                    Welcome! Try InstaGraph below.
                   </h1>
                     This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-500">@yoheinakajima</a>, &quot;VC by day, builder by night.&quot; 
                     <br/>
