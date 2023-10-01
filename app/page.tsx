@@ -17,8 +17,9 @@ import 'reactflow/dist/style.css';
 import axios from 'axios';
 import { useScreenshot, createFileName } from 'use-react-screenshot';
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import DownloadButton from '@/components/ui/download-button';
 import { ReloadIcon } from "@radix-ui/react-icons"
 
 const initialNodes = [
@@ -102,8 +103,8 @@ export default function IndexPage() {
         <div className="text-sm font-semibold tracking-tight">
           Enter a URL or search with text:
         </div>
-        <div className='w-full flex flex-wrap items-center gap-2'>
-          <form className='flex grow' onSubmit={handleSubmit}>
+        <div className='w-full flex flex-wrap items-center'>
+          <form className='flex grow gap-2' onSubmit={handleSubmit}>
             <Input
               type="text"
               placeholder=""
@@ -118,25 +119,15 @@ export default function IndexPage() {
               >
                 {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Submit"}
             </button>
-          </form>
-          <div className='flex flex-wrap gap-2'>
-            <button
-                  type="button"
-                  disabled={loading || nodes.length <= 1}
-                  onClick={handleDownload}
-                  className={`${buttonVariants({ variant: "secondary", size: "sm" })} mt-2 md:mt-0`}
-                >
-                  Download Image
-            </button>
             <button
                 type="button"
                 disabled={loading || nodes.length <= 1}
                 onClick={handleDownload}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} mt-2 md:mt-0`}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
               >
-                Save to History
+                Save
             </button>
-          </div>
+          </form>
         </div>        
       </div>
       <div className="flex justify-between" ref={ref}>
@@ -154,6 +145,7 @@ export default function IndexPage() {
                                 onInit={onInit}
                                 fitView
                             >
+                              <DownloadButton disabled={loading || nodes.length <= 1}/>
                               <Controls position={"top-right"}/>
                               <MiniMap nodeStrokeWidth={3} zoomable pannable />
                               <Background variant={BackgroundVariant.Lines} gap={15} size={1} />
