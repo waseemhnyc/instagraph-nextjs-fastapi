@@ -2,6 +2,10 @@
 
 Original project and inspiration: [<a href="https://twitter.com/yoheinakajima">Yohei Nakajima</a>](https://twitter.com/yoheinakajima) - [<a href="https://github.com/yoheinakajima/instagraph">Instagraph</a>](https://github.com/yoheinakajima/instagraph)
 
+Even though I love working with Python apps (previous Django developer) modern frontend technologies (ex: NextJS, Tailwind, Shadcn etc) allow you to move faster. So I decided to build Instagraph Next JS.
+
+[<a href="https://tally.so/r/mY0676">Sign up for updates and more information about the deployed app.</a>]((https://tally.so/r/mY0676))
+
 Project made with:
 - [<a href="https://twitter.com/shadcn">Shadcn</a>](https://twitter.com/shadcn) - [<a href="https://github.com/shadcn/next-template">Next JS Template</a>](https://github.com/shadcn/next-template)
 - [<a href="https://reactflow.dev/">React Flow</a>](https://reactflow.dev/)
