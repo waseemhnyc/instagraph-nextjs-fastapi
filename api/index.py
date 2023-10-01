@@ -11,7 +11,6 @@ app = Flask(__name__)
 
 # Load environment variables from .env file
 try:
-
     from dotenv import load_dotenv, find_dotenv
     load_dotenv(find_dotenv())
     openai_api_key = os.getenv("OPENAI_API_KEY")
