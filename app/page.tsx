@@ -97,7 +97,7 @@ export default function IndexPage() {
   };
 
   return (
-    <section className="container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
+    <section className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
       <div className="flex flex-col items-start gap-2">
         <div className="text-sm font-semibold tracking-tight">
           Enter a URL or search with text:
@@ -142,7 +142,7 @@ export default function IndexPage() {
       <div className="flex justify-between" ref={ref}>
           <div className="position-absolute w-full h-[700px]">
               <div className="w-full h-[75%] md:h-full">
-                  <div className="dndflow border shadow-lg rounded-lg p-4">
+                  <div className="dndflow border shadow-lg rounded-lg md:p-4">
                       <ReactFlowProvider>
                         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
                             <ReactFlow

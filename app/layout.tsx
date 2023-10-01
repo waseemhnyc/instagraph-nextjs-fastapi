@@ -49,7 +49,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <ThemeProvider attribute="class" defaultTheme="light">
             <div className="relative flex min-h-screen flex-col">
               <SiteHeader />
-              <div className="container grid items-center gap-6 pb-8 pt-6 md:py-6 mt-6 mb-3 rounded-md border">
+              <div className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 mt-6 mb-3 rounded-md border">
                 <div className="sm:text-sm md:text-md tracking-tight">
                   <h1 className="text-lg font-bold">
                     Welcome! Try InstaGraph below.
