@@ -86,7 +86,7 @@ export default function IndexPage() {
     ];
     setNodes(initialNodes);
     try {
-      const response = await axios.post("/api/get_graph_data", { user_input: userInput });
+      const response = await axios.post("https://instagraph-nextjs-production.up.railway.app", { user_input: userInput });
       setNodes(response.data.elements.nodes);
       setEdges(response.data.elements.edges);
     } catch (error) {
