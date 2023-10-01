@@ -1,7 +1,8 @@
 export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
-  name: "InstaGraph 🌐 Next JS",
+  name: "InstaGraph",
+  subName: "built with Next JS",
   description:
     "Converts text input or URL into knowledge graph and displays.",
   mainNav: [],

@@ -168,10 +168,12 @@ def create_nodes_edges(data):
                 "target": edge["to"],
                 "label": edge["relationship"],
                 "type": "default",
-                "style": {"stroke": edge["color"]}
+                "style": {"stroke": edge["color"], }
             })
 
         return nodes, edges
     except Exception as e:
         print(e)
         return [], []
+
+

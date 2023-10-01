@@ -25,8 +25,12 @@ const initialNodes = [
   { 
     id: '1', 
     position: { x: 250, y: 250 }, 
-    style: { color: 'white',  background: '#0077b6'}, 
-    data: { label: '👋 Welcome. Enter a URL or text above.' }, 
+    style: { 
+      color: 'white',  
+      background: '#0077b6', 
+      width: '200px',
+    }, 
+    data: { label: 'Enter a URL or search with text' }, 
     draggable: false, 
     selectable: false, 
     deletable: false 
@@ -96,36 +100,48 @@ export default function IndexPage() {
     <section className="container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
       <div className="flex flex-col items-start gap-2">
         <div className="text-sm font-semibold tracking-tight">
-          Enter a URL or text:
+          Enter a URL or search with text:
         </div>
-        <form className='w-full flex justify-between items-center gap-2' onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            placeholder=""
-            className="mr-6"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-          />
-          <button
-              type="submit"
-              disabled={loading}
-              className={buttonVariants({ variant: "default", size: "sm" })}
-            >
-              {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Submit"}
-          </button>
-          <button
-              type="button"
-              disabled={loading || nodes.length <= 1}
-              onClick={handleDownload}
-              className={buttonVariants({ variant: "secondary", size: "sm" })}
-            >
-              Download
-          </button>
+        <div className='w-full flex flex-wrap items-center gap-2'>
+          <form className='flex flex-grow' onSubmit={handleSubmit}>
+            <Input
+              type="text"
+              placeholder=""
+              className="mr-2 md:mr-6"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+            />
+            <button
+                type="submit"
+                disabled={loading}
+                className={`${buttonVariants({ variant: "default", size: "sm" })} md:mt-0`}
+              >
+                {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Submit"}
+            </button>
           </form>
+          <div className='flex flex-wrap gap-2'>
+            <button
+                  type="button"
+                  disabled={loading || nodes.length <= 1}
+                  onClick={handleDownload}
+                  className={`${buttonVariants({ variant: "secondary", size: "sm" })} mt-2 md:mt-0`}
+                >
+                  Download Image
+            </button>
+            <button
+                type="button"
+                disabled={loading || nodes.length <= 1}
+                onClick={handleDownload}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} mt-2 md:mt-0`}
+              >
+                Save to History
+            </button>
+          </div>
+        </div>        
       </div>
       <div className="flex justify-between" ref={ref}>
           <div className="position-absolute w-full h-[700px]">
-              <div className="w-full h-full">
+              <div className="w-full h-[75%] md:h-full">
                   <div className="dndflow border shadow-lg rounded-lg p-4">
                       <ReactFlowProvider>
                         <div className="reactflow-wrapper" ref={reactFlowWrapper}>
@@ -138,8 +154,8 @@ export default function IndexPage() {
                                 onInit={onInit}
                                 fitView
                             >
-                              <Controls />
-                              <MiniMap />
+                              <Controls position={"top-right"}/>
+                              <MiniMap nodeStrokeWidth={3} zoomable pannable />
                               <Background variant={BackgroundVariant.Lines} gap={15} size={1} />
                             </ReactFlow>
                         </div>
