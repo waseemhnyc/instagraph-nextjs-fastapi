@@ -8,7 +8,7 @@ const nextConfig = {
           process.env.NODE_ENV === 'development'
             ? 'http://127.0.0.1:5000/api/:path*'
             : process.env.NODE_ENV === 'production'
-            ? 'https://instagraph-nextjs-production.up.railway.app/api/:path*'
+            ? process.env.BACKEND_URL + 'api/:path*'
             : '/api/',
       },
     ];
