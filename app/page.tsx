@@ -103,7 +103,7 @@ export default function IndexPage() {
           Enter a URL or search with text:
         </div>
         <div className='w-full flex flex-wrap items-center gap-2'>
-          <form className='flex flex-grow' onSubmit={handleSubmit}>
+          <form className='flex grow' onSubmit={handleSubmit}>
             <Input
               type="text"
               placeholder=""

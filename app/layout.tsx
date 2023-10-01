@@ -54,7 +54,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   <h1 className="text-lg font-bold">
                     Welcome! Give InstaGraph a try below.
                   </h1>
-                    This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-500">@yoheinakajima</a>, "VC by day, builder by night." 
+                    This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-500">@yoheinakajima</a>, &quot;VC by day, builder by night.&quot; 
                     <br/>
                     Yohei built <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-blue-500">instagraph.ai</a> to visualize AI generated knowledge graphs. Check out his examples {' '}  
                     <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="underline text-blue-500">here</a> {' '}  
@@ -64,7 +64,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     These graphs are more similar to how our brain embeds information in comparison to a linear format.
                     <br/>
                     <br/> 
-                    I created my own version of instagraph here. I'm adding some fun features to help you build your own knowledge graphs and more.
+                    I created my own version of instagraph here. I&lsquo;m adding some fun features to help you build your own knowledge graphs and more.
                     <br/>
                     <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-blue-500">
                         Sign up for early access
