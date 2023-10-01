@@ -179,4 +179,5 @@ def create_nodes_edges(data):
         print(e)
         return [], []
 
-
+if __name__ == '__main__':
+  app.run(port=5000)
