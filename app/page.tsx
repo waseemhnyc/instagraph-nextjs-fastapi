@@ -162,6 +162,7 @@ export default function IndexPage() {
           onHistorySelect={(historyItem) => {
             setNodes(historyItem.results.nodes);
             setEdges(historyItem.results.edges);
+            setClickedSave(true);
           }}
         />
         {/* Mobile Sidebar */}
@@ -213,6 +214,7 @@ export default function IndexPage() {
                     onHistorySelect={(historyItem) => {
                       setNodes(historyItem.nodes);
                       setEdges(historyItem.edges);
+                      setClickedSave(true);
                     }}
                   />
                 </Dialog.Panel>
