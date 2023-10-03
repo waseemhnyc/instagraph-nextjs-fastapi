@@ -157,7 +157,7 @@ def create_nodes_edges(data):
             nodes.append({
                 "id": node["id"],
                 "position": {"x": node["position_x"], "y": node["position_y"]},
-                "style": {"background": node["color"]},
+                "style": {"background": node["color"], "color": "#000000"},
                 "data": {"label": node["label"]},
                 "draggable": True,
                 "selectable": False,
