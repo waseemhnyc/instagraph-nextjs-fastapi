@@ -118,7 +118,7 @@ export default function IndexPage() {
     <section className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
       <div className="flex flex-col items-start gap-2">
         <div className="text-sm font-semibold tracking-tight">
-          Enter a URL or search with text:
+          Search:
         </div>
         <div className='w-full flex flex-wrap items-center'>
           <form className='flex grow gap-2' onSubmit={handleSubmit}>
