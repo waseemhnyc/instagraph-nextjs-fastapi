@@ -109,7 +109,6 @@ export default function IndexPage() {
     try {
 
       const baseUrl = process.env.NODE_ENV === 'production' ? 'https://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
-      console.log(baseUrl);
       const url = `${baseUrl}/api/get_graph/${encodeURIComponent(userInput)}`;
 
       const ees = new EventSource(url);
