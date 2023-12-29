@@ -187,19 +187,20 @@ export default function IndexPage() {
         <div className="text-sm font-semibold tracking-tight">
           Search:
         </div>
-        <div className='w-full flex flex-wrap items-center'>
-          <form className='flex grow gap-2' onSubmit={handleSubmit}>
-            <Input
+        <div className='w-full items-center'>
+          <form className='flex flex-col' onSubmit={handleSubmit}>
+          <Input
               type="text"
               placeholder="Enter your search term here"
-              className="mr-2 md:mr-6"
+              className="mr-2 md:mr-6 w-full"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
             />
+            <div className='flex pt-2 gap-2'>
             <button
                 type="submit"
                 disabled={loading}
-                className={`${buttonVariants({ variant: "default", size: "sm" })} md:mt-0`}
+                className={`${buttonVariants({ variant: "default", size: "sm" })} md:mt-0` }
               >
                 {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Search"}
             </button>
@@ -222,10 +223,12 @@ export default function IndexPage() {
             <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 lg:hidden`}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
               >
                 History
             </button>
+            </div>
+
           </form>
         </div>        
       </div>

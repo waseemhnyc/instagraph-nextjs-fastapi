@@ -1,7 +1,7 @@
 import os
 
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 
@@ -63,7 +63,7 @@ class Node(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return Response(status_code=200)
 
 
 @app.get("/api/get_graph/{message}")
