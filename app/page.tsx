@@ -10,53 +10,40 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
-  Edge
+  Edge,
+  Node,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import axios from 'axios';
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-
 import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import DownloadButton from '@/components/ui/download-button';
 import { ReloadIcon } from "@radix-ui/react-icons"
-
 import { Sidebar } from "@/components/sidebar"
 import { saveSearchHistory, loadSearchHistory } from "@/lib/utils"
 import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
+import { XMarkIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
-import { XMarkIcon } from '@heroicons/react/24/outline'
+import { Alert, AlertTitle } from "@/components/ui/alert"
 
-const initialNodes = [
-  { 
-    id: '1', 
-    position: { x: 250, y: 250 }, 
-    style: { 
-      color: 'white',  
-      background: '#0077b6', 
-      width: '200px',
-    }, 
-    data: { label: 'Enter a URL or search with text' }, 
-    draggable: false, 
-    selectable: false, 
-    deletable: false 
-  },
-];
 
 export default function IndexPage() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [currentNode, setCurrentNode] = useState<Node<any, string | undefined> | null>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [userInput, setUserInput] = useState("");
   const [submittedUserInput, setSubmittedUserInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const ref = createRef<HTMLDivElement>();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SavedHistory[]>([]);
   const [clickedSave, setClickedSave] = useState(false);
+  const [eventSource, setEventSource] = useState<EventSource | null>(null);
+
+  const ref = createRef<HTMLDivElement>();
 
   const onInit = (reactFlowInstance: any) => setReactFlowInstance(reactFlowInstance);
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), []);
@@ -77,9 +64,14 @@ export default function IndexPage() {
       setSearchHistory(defaultSavedHistory);
     } else {
       setSearchHistory(currentSearchHistory);
+      const { nodes: initialNodes, edges: initialEdges } = currentSearchHistory[0].results;
+      setNodes(initialNodes);
+      setEdges(initialEdges);
+      setClickedSave(true);
     }
 
   }, []);
+
 
   const centerGraph = () => {
     if (reactFlowInstance) {
@@ -92,24 +84,90 @@ export default function IndexPage() {
     centerGraph();
   }, [nodes, edges]);
 
+  useEffect(() => {
+    if (currentNode) {
+      setNodes((prevNodes) => {
+        const nodeExists = prevNodes.some(node => node.id === currentNode.id);
+        if (!nodeExists) {
+          const newNode = { ...currentNode, id: `${currentNode.id}` };
+          return [...prevNodes, newNode];
+        }
+        return prevNodes;
+      });
+    }
+  }, [currentNode]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!userInput) return;
     setSubmittedUserInput(userInput)
     setLoading(true);
     setClickedSave(false);
-    const initialNodes = [
-      { id: '1', position: { x: 250, y: 250 }, style: { color: 'white',  background: '#0077b6'}, data: { label: 'Hang tight...' }, draggable: false, selectable: false, deletable: false },
-    ];
-    setNodes(initialNodes);
+    setNodes([]);
+    setEdges([]);
+
     try {
-      const response = await axios.post("/api/get_graph_data", { user_input: userInput });
-      setNodes(response.data.elements.nodes);
-      setEdges(response.data.elements.edges);
+
+      const baseUrl = process.env.NODE_ENV === 'production' ? 'https://127.0.0.1:8000' : 'http://127.0.0.1:8000';
+      const url = `${baseUrl}/api/get_graph/${encodeURIComponent(userInput)}`;
+
+      const ees = new EventSource(url);
+      setEventSource(ees);
       
+      ees.onmessage = (event) => {
+        if (event.data === '[DONE]') {
+          setLoading(false);
+          ees.close();
+        } else {
+            const data = JSON.parse(event.data);
+            const current_node = { 
+              id: data.id,
+              resizing: true,
+              position: { x: data.x, y: data.y},
+              style: { 
+                color: data.stroke,  
+                background: data.background, 
+                width: '100px',
+              }, 
+              data: { label: data.label}, 
+              draggable: true, 
+              selectable: false, 
+              deletable: false 
+            }
+            setCurrentNode(current_node);
+            data.adjacencies.forEach((adjacency: { 
+                source: string; 
+                id: string; 
+                target: string; 
+                label: string; 
+              }) => {
+              adjacency.source = data.id;
+              setEdges((oldEdges) => addEdge({
+                id: `${adjacency.source}_${adjacency.target}`, 
+                source: adjacency.source, 
+                target: adjacency.target, 
+                label: adjacency.label,
+              }, oldEdges));
+            });
+        }
+      };
+
+      ees.onerror = (event) => {
+        ees.close();
+      }
+
     } catch (error) {
       console.error(error);
+      setLoading(false);
     } finally {
+      
+    }
+  };
+
+  const handleCancel = () => {
+    if (eventSource) {
+      eventSource.close();
+      setEventSource(null);
       setLoading(false);
     }
   };
@@ -117,6 +175,15 @@ export default function IndexPage() {
   return (
     <section className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
       <div className="flex flex-col items-start gap-2">
+          <p className='text-lg font-bold'>Create an AI Generated Knowledge Graph!</p>
+          <Alert>
+            <RocketLaunchIcon className="h-4 w-4" />
+            <AlertTitle>A knowledge graph offers a non-linear structure to information. Helpful for learning and understanding.</AlertTitle>
+          </Alert>
+          <div className='text-xs pb-3'>
+            <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className=" text-blue-400"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-blue-400"><sup>[EX2]</sup></a></p>
+            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-blue-400">here</a>. </p> 
+          </div>
         <div className="text-sm font-semibold tracking-tight">
           Search:
         </div>
@@ -124,7 +191,7 @@ export default function IndexPage() {
           <form className='flex grow gap-2' onSubmit={handleSubmit}>
             <Input
               type="text"
-              placeholder=""
+              placeholder="Enter your search term here"
               className="mr-2 md:mr-6"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -134,7 +201,15 @@ export default function IndexPage() {
                 disabled={loading}
                 className={`${buttonVariants({ variant: "default", size: "sm" })} md:mt-0`}
               >
-                {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Submit"}
+                {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Search"}
+            </button>
+            <button
+                type="button"
+                disabled={!loading}
+                onClick={handleCancel}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
+              >
+                Cancel
             </button>
             <button
                 type="button"
@@ -250,3 +325,4 @@ export default function IndexPage() {
     </section>
   )
 }
+

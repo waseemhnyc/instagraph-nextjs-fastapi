@@ -21,7 +21,7 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
           <ScrollArea className="h-[600px] px-1">
             <div className="space-y-1 p-2">
               {searchHistory?.map((searchItem, i) => (
-                <div className="flex justify-between items-center">
+                <div key={`${searchItem}-${i}`} className="flex justify-between items-center">
                   <div className="w-full">
                   <Button
                     key={`${searchItem}-${i}`}
