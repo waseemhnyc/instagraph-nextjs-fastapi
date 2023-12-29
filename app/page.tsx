@@ -216,7 +216,7 @@ export default function IndexPage() {
                 type="button"
                 disabled={loading || nodes.length <= 1 || clickedSave}
                 onClick={handleSaveToHistory}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
               >
                 Save
             </button>
