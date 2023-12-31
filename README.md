@@ -4,6 +4,8 @@ Original project and inspiration: [<a href="https://twitter.com/yoheinakajima">Y
 
 Even though I love working with Python apps (previous Django developer), modern frontend technologies like NextJS (and Tailwind CSS, Shadcn etc) enable you to move faster. Also with the popularity of LLMs, streaming and server-sent-endpoints have become more important in AI products. FastAPI is perfect for building backends to support this.
 
+![Demo](demo.gif)
+
 [<a href="https://tally.so/r/mY0676">Sign up for updates and more information about the deployed app.</a>]((https://tally.so/r/mY0676))
 
 Project made with:
@@ -33,7 +35,7 @@ OPENAI_API_KEY=your-api-key-here
 yarn run dev
 ```
 
-Now that you have the frontend running locally its time to get the backend running.
+Now that the frontend is working, it's time to get the backend up and running.
 
 6. Move into the `api` directory, create a virutalenv and source the environment
 
