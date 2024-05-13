@@ -22,6 +22,7 @@ except:
 model_35 = "gpt-3.5-turbo-1106"
 model_4 = "gpt-4-0613"
 model_4_preview = "gpt-4-1106-preview"
+model_4o = "gpt-4o"
 
 app = FastAPI()
 
@@ -63,7 +64,7 @@ class Node(BaseModel):
 
 @app.get("/")
 async def root():
-    return Response(status_code=200)
+    return {"message": "healthcheck"}
 
 
 @app.get("/api/get_graph/{message}")
@@ -103,7 +104,7 @@ async def get_graph(message: str):
         ]
 
         node_response = await aclient.chat.completions.create(
-            model=model_35,
+            model=model_4o,
             stream=True,
             messages=node_messages,
             response_model=Iterable[Node]
