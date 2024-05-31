@@ -18,6 +18,17 @@ export function saveSearchHistory(savedHistory: SavedHistory[] = []) {
   }
 }
 
+export enum ResultCode {
+  InvalidCredentials = 'INVALID_CREDENTIALS',
+  InvalidSubmission = 'INVALID_SUBMISSION',
+  UserAlreadyExists = 'USER_ALREADY_EXISTS',
+  UnknownError = 'UNKNOWN_ERROR',
+  UserCreated = 'USER_CREATED',
+  UserLoggedIn = 'USER_LOGGED_IN',
+  NotAuthorized = 'NOT_AUTHORIZED',
+  InternalServerError = 'INTERNAL_SERVER_ERROR'
+}
+
 // Function to load search history
 export function loadSearchHistory() {
   // Check if localStorage is defined
@@ -36,5 +47,27 @@ export function loadSearchHistory() {
   // If localStorage is not defined, return an empty array
   else {
     return [];
+  }
+}
+
+export const getStringFromBuffer = (buffer: ArrayBuffer) =>
+  Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+
+export const getMessageFromCode = (resultCode: string) => {
+  switch (resultCode) {
+    case ResultCode.InvalidCredentials:
+      return 'Invalid credentials!'
+    case ResultCode.InvalidSubmission:
+      return 'Invalid submission, please try again!'
+    case ResultCode.UserAlreadyExists:
+      return 'User already exists, please log in!'
+    case ResultCode.UserCreated:
+      return 'User created, welcome!'
+    case ResultCode.UnknownError:
+      return 'Something went wrong, please try again!'
+    case ResultCode.UserLoggedIn:
+      return 'Logged in!'
   }
 }

@@ -14,10 +14,13 @@ import ReactFlow, {
   Node,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import Link from 'next/link'
+
+import { IconSeparator } from '@/components/ui/icons'
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import DownloadButton from '@/components/ui/download-button';
 import { ReloadIcon } from "@radix-ui/react-icons"
@@ -25,9 +28,32 @@ import { Sidebar } from "@/components/sidebar"
 import { saveSearchHistory, loadSearchHistory } from "@/lib/utils"
 import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
 import { XMarkIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
+import { UserMenu } from '@/components/user-menu'
+import { Session } from '@/lib/types'
+import { auth } from '@/auth'
+// import { SidebarMobile } from './sidebar-mobile'
+
+// import { Button, buttonVariants } from '@/components/ui/button'
 
 import { Alert, AlertTitle } from "@/components/ui/alert"
 
+async function UserOrLogin() {
+  const session = (await auth()) as Session
+  return (
+    <>
+      <div className="flex items-center">
+        <IconSeparator className="size-6 text-muted-foreground/50" />
+        {session?.user ? (
+          <UserMenu user={session.user} />
+        ) : (
+          <Button variant="link" asChild className="-ml-2">
+            <Link href="/login">Login</Link>
+          </Button>
+        )}
+      </div>
+    </>
+  )
+}
 
 export default function IndexPage() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -108,7 +134,7 @@ export default function IndexPage() {
 
     try {
 
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'https://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
       const url = `${baseUrl}/api/get_graph/${encodeURIComponent(userInput)}`;
 
       const ees = new EventSource(url);
@@ -216,14 +242,14 @@ export default function IndexPage() {
                 type="button"
                 disabled={loading || nodes.length <= 1 || clickedSave}
                 onClick={handleSaveToHistory}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 `}
               >
                 Save
             </button>
             <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
+                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
               >
                 History
             </button>
@@ -328,4 +354,3 @@ export default function IndexPage() {
     </section>
   )
 }
-
