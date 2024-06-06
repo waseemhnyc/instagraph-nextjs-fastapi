@@ -25,35 +25,17 @@ import { Input } from "@/components/ui/input"
 import DownloadButton from '@/components/ui/download-button';
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { Sidebar } from "@/components/sidebar"
-import { saveSearchHistory, loadSearchHistory } from "@/lib/utils"
+import { saveSearchHistory, loadSearchHistory, saveChat } from "@/lib/utils"
 import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
 import { XMarkIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 import { UserMenu } from '@/components/user-menu'
-import { Session } from '@/lib/types'
+import { Session, Chat, SearchResult } from '@/lib/types'
 import { auth } from '@/auth'
 // import { SidebarMobile } from './sidebar-mobile'
 
 // import { Button, buttonVariants } from '@/components/ui/button'
 
 import { Alert, AlertTitle } from "@/components/ui/alert"
-
-async function UserOrLogin() {
-  const session = (await auth()) as Session
-  return (
-    <>
-      <div className="flex items-center">
-        <IconSeparator className="size-6 text-muted-foreground/50" />
-        {session?.user ? (
-          <UserMenu user={session.user} />
-        ) : (
-          <Button variant="link" asChild className="-ml-2">
-            <Link href="/login">Login</Link>
-          </Button>
-        )}
-      </div>
-    </>
-  )
-}
 
 export default function IndexPage() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -68,6 +50,8 @@ export default function IndexPage() {
   const [searchHistory, setSearchHistory] = useState<SavedHistory[]>([]);
   const [clickedSave, setClickedSave] = useState(false);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
+  // const [allNodes, setAllNodes] = useState<Node[]>([]);
+  // const [allEdges, setAllEdges] = useState<Edge[]>([]);
 
   const ref = createRef<HTMLDivElement>();
 
@@ -124,6 +108,9 @@ export default function IndexPage() {
   }, [currentNode]);
 
   const handleSubmit = async (event: React.FormEvent) => {
+
+    // const session = (await auth()) as Session
+
     event.preventDefault();
     if (!userInput) return;
     setSubmittedUserInput(userInput)
@@ -131,6 +118,9 @@ export default function IndexPage() {
     setClickedSave(false);
     setNodes([]);
     setEdges([]);
+
+    // let currentNodes: Node[] = [];
+    // let currentEdges: Edge[] = [];
 
     try {
 
@@ -144,6 +134,19 @@ export default function IndexPage() {
         if (event.data === '[DONE]') {
           setLoading(false);
           ees.close();
+          // console.log('Complete result:', { nodes: currentNodes, edges: currentEdges });
+
+          // const chat: Chat = {
+          //   id: generateChatId(), // Функция для генерации уникального идентификатора чата
+          //   searchValue: userInput,
+          //   results: { nodes: currentNodes, edges: currentEdges },
+          //   userId: session.user.id // Предполагаем, что session содержит идентификатор пользователя
+          // };
+
+          // await saveChat(chat);
+
+          // setAllNodes(currentNodes);
+          // setAllEdges(currentEdges);
         } else {
             const data = JSON.parse(event.data);
             const current_node = { 
@@ -161,6 +164,8 @@ export default function IndexPage() {
               deletable: false 
             }
             setCurrentNode(current_node);
+            // currentNodes = [...currentNodes, current_node]; // Обновляем локальные переменные
+
             data.adjacencies.forEach((adjacency: { 
                 source: string; 
                 id: string; 
@@ -178,6 +183,25 @@ export default function IndexPage() {
         }
       };
 
+            // setCurrentNode(current_node);
+            // currentNodes = [...currentNodes, current_node]; // Обновляем локальные переменные
+
+            // data.adjacencies.forEach((adjacency: { 
+            //     source: string; 
+            //     id: string; 
+            //     target: string; 
+            //     label: string; 
+            //   }) => {
+            //   adjacency.source = data.id;
+            //   const newEdge = {
+            //     id: `${adjacency.source}_${adjacency.target}`, 
+            //     source: adjacency.source, 
+            //     target: adjacency.target, 
+            //     label: adjacency.label,
+            //   };
+            //   setEdges((oldEdges) => addEdge(newEdge, oldEdges));
+            //   currentEdges = [...currentEdges, newEdge]; // Обновляем локальные переменные
+            // });
       ees.onerror = (event) => {
         ees.close();
       }
@@ -190,6 +214,10 @@ export default function IndexPage() {
     }
   };
 
+  // const generateChatId = (): string => {
+  //   // Реализуйте логику генерации уникального идентификатора чата
+  //   return 'unique-chat-id';
+  // };
   const handleCancel = () => {
     if (eventSource) {
       eventSource.close();

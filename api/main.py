@@ -14,7 +14,7 @@ import openai
 try:
 	from dotenv import load_dotenv, find_dotenv
 	load_dotenv(find_dotenv())
-	openai_api_key = os.getenv("OPENAI_API_KEY")
+	openai_api_key = os.getenv("OPENAI_API_KEY", "sk-proj-kbNyn0TImsoqflvsptswT3BlbkFJL4kD1CNe5pRK3mAtwT80")
 except:
 	openai_api_key = os.environ.get('OPENAI_API_KEY')
         

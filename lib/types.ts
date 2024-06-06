@@ -1,5 +1,4 @@
 // import { CoreMessage } from 'ai'
-
 // export type Message = CoreMessage & {
 //   id: string
 // }
@@ -14,12 +13,51 @@
 //   sharePath?: string
 // }
 
+export interface Chat extends Record<string, any> {
+  id: string
+  searchValue: string
+  results: SearchResult
+  userId: string
+}
+
 export type ServerActionResult<Result> = Promise<
   | Result
   | {
       error: string
     }
 >
+
+export type SearchResult = {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+export type Node = {
+  id: string;
+  data: {
+    label: string;
+  };
+  resizing: boolean;
+  position: {
+    x: number;
+    y: number;
+  };
+  style: {
+    color: string;
+    background: string;
+    width: string;
+  };
+  draggable: boolean;
+  selectable: boolean;
+  deletable: boolean;
+};
+
+export type Edge = {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+};
 
 export interface Session {
   user: {
