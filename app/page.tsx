@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useRef, useCallback, useEffect, createRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect, createRef } from 'react'
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -12,28 +12,20 @@ import ReactFlow, {
   Connection,
   Edge,
   Node,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import Link from 'next/link'
+} from 'reactflow'
+import 'reactflow/dist/style.css'
 
-import { IconSeparator } from '@/components/ui/icons'
-
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Dialog, Transition } from '@headlessui/react'
+import { Fragment } from 'react'
+import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import DownloadButton from '@/components/ui/download-button';
+import DownloadButton from '@/components/ui/download-button'
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { Sidebar } from "@/components/sidebar"
-import { saveSearchHistory, loadSearchHistory, saveChat } from "@/lib/utils"
-import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
+import { SavedHistory } from '@/data/savedHistory';
 import { XMarkIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
-import { UserMenu } from '@/components/user-menu'
-import { Session, Chat, SearchResult } from '@/lib/types'
-import { auth } from '@/auth'
-// import { SidebarMobile } from './sidebar-mobile'
-
-// import { Button, buttonVariants } from '@/components/ui/button'
+import { saveChat, getChatsHistory, getUser } from "./actions"
+import { Chat, ChatNode, ChatEdge } from '@/lib/types'
 
 import { Alert, AlertTitle } from "@/components/ui/alert"
 
@@ -50,36 +42,19 @@ export default function IndexPage() {
   const [searchHistory, setSearchHistory] = useState<SavedHistory[]>([]);
   const [clickedSave, setClickedSave] = useState(false);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
-  // const [allNodes, setAllNodes] = useState<Node[]>([]);
-  // const [allEdges, setAllEdges] = useState<Edge[]>([]);
 
   const ref = createRef<HTMLDivElement>();
 
   const onInit = (reactFlowInstance: any) => setReactFlowInstance(reactFlowInstance);
   const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), []);
 
-  const handleSaveToHistory = () => {
-    const newSearchHistory = [{ searchValue: submittedUserInput, results: { nodes, edges } }, ...searchHistory];
-    setSearchHistory(newSearchHistory);
-    saveSearchHistory(newSearchHistory);
-    setUserInput("")
-    setSubmittedUserInput("")
-    setLoading(false)
-    setClickedSave(true);
-  };
-
   useEffect(() => {
-    const currentSearchHistory = loadSearchHistory();
-    if(currentSearchHistory.length === 0) {
-      setSearchHistory(defaultSavedHistory);
-    } else {
-      setSearchHistory(currentSearchHistory);
-      const { nodes: initialNodes, edges: initialEdges } = currentSearchHistory[0].results;
-      setNodes(initialNodes);
-      setEdges(initialEdges);
-      setClickedSave(true);
-    }
+    const loadChatHistory = async () => {
+      const chatHistory = await fetchChatHistory();
+      setSearchHistory(chatHistory);
+    };
 
+    loadChatHistory();
   }, []);
 
 
@@ -109,99 +84,81 @@ export default function IndexPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
 
-    // const session = (await auth()) as Session
-
     event.preventDefault();
     if (!userInput) return;
-    setSubmittedUserInput(userInput)
+    setSubmittedUserInput(userInput);
     setLoading(true);
     setClickedSave(false);
     setNodes([]);
     setEdges([]);
 
-    // let currentNodes: Node[] = [];
-    // let currentEdges: Edge[] = [];
+    let currentNodes: ChatNode[] = [];
+    let currentEdges: ChatEdge[] = [];
 
     try {
-
       const baseUrl = process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
       const url = `${baseUrl}/api/get_graph/${encodeURIComponent(userInput)}`;
 
       const ees = new EventSource(url);
       setEventSource(ees);
-      
-      ees.onmessage = (event) => {
+
+      ees.onmessage = async (event) => {
         if (event.data === '[DONE]') {
           setLoading(false);
           ees.close();
-          // console.log('Complete result:', { nodes: currentNodes, edges: currentEdges });
 
-          // const chat: Chat = {
-          //   id: generateChatId(), // Функция для генерации уникального идентификатора чата
-          //   searchValue: userInput,
-          //   results: { nodes: currentNodes, edges: currentEdges },
-          //   userId: session.user.id // Предполагаем, что session содержит идентификатор пользователя
-          // };
+          const chatId: string = generateChatId();
+          const user = await fetchCurrentUser();
 
-          // await saveChat(chat);
+          if (user) {
+            const chat: Chat = {
+              id: chatId,
+              searchValue: userInput,
+              results: { nodes: currentNodes, edges: currentEdges },
+              userId: user.id
+            };
 
-          // setAllNodes(currentNodes);
-          // setAllEdges(currentEdges);
+            await saveChat(chat);
+            setSearchHistory((prevHistory) => [{ searchValue: userInput, results: { nodes: currentNodes, edges: currentEdges }, id: chatId }, ...prevHistory]);
+          }
         } else {
             const data = JSON.parse(event.data);
-            const current_node = { 
+            const current_node = {
               id: data.id,
               resizing: true,
               position: { x: data.x, y: data.y},
-              style: { 
-                color: data.stroke,  
-                background: data.background, 
+              style: {
+                color: data.stroke,
+                background: data.background,
                 width: '100px',
-              }, 
-              data: { label: data.label}, 
-              draggable: true, 
-              selectable: false, 
-              deletable: false 
+              },
+              data: { label: data.label},
+              draggable: true,
+              selectable: false,
+              deletable: false
             }
             setCurrentNode(current_node);
-            // currentNodes = [...currentNodes, current_node]; // Обновляем локальные переменные
+            currentNodes = [...currentNodes, current_node];
 
-            data.adjacencies.forEach((adjacency: { 
-                source: string; 
-                id: string; 
-                target: string; 
-                label: string; 
+            data.adjacencies.forEach((adjacency: {
+                source: string;
+                id: string;
+                target: string;
+                label: string;
               }) => {
               adjacency.source = data.id;
-              setEdges((oldEdges) => addEdge({
-                id: `${adjacency.source}_${adjacency.target}`, 
-                source: adjacency.source, 
-                target: adjacency.target, 
+              const newEdge = {
+                id: `${adjacency.source}_${adjacency.target}`,
+                source: adjacency.source,
+                target: adjacency.target,
                 label: adjacency.label,
-              }, oldEdges));
+              };
+              setEdges((oldEdges) => addEdge(newEdge, oldEdges));
+              currentEdges = [...currentEdges, newEdge];
             });
         }
       };
 
-            // setCurrentNode(current_node);
-            // currentNodes = [...currentNodes, current_node]; // Обновляем локальные переменные
-
-            // data.adjacencies.forEach((adjacency: { 
-            //     source: string; 
-            //     id: string; 
-            //     target: string; 
-            //     label: string; 
-            //   }) => {
-            //   adjacency.source = data.id;
-            //   const newEdge = {
-            //     id: `${adjacency.source}_${adjacency.target}`, 
-            //     source: adjacency.source, 
-            //     target: adjacency.target, 
-            //     label: adjacency.label,
-            //   };
-            //   setEdges((oldEdges) => addEdge(newEdge, oldEdges));
-            //   currentEdges = [...currentEdges, newEdge]; // Обновляем локальные переменные
-            // });
       ees.onerror = (event) => {
         ees.close();
       }
@@ -210,14 +167,14 @@ export default function IndexPage() {
       console.error(error);
       setLoading(false);
     } finally {
-      
+
     }
   };
 
-  // const generateChatId = (): string => {
-  //   // Реализуйте логику генерации уникального идентификатора чата
-  //   return 'unique-chat-id';
-  // };
+  const generateChatId = (): string => {
+    return crypto.randomUUID()
+  };
+
   const handleCancel = () => {
     if (eventSource) {
       eventSource.close();
@@ -225,6 +182,16 @@ export default function IndexPage() {
       setLoading(false);
     }
   };
+
+  const fetchChatHistory = async () => {
+    const chatHistory = await getChatsHistory();
+    return chatHistory;
+  }
+
+  const fetchCurrentUser = async () => {
+    const user = await getUser()
+    return user
+  }
 
   return (
     <section className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
@@ -236,7 +203,7 @@ export default function IndexPage() {
           </Alert>
           <div className='text-xs pb-3'>
             <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className=" text-blue-400"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-blue-400"><sup>[EX2]</sup></a></p>
-            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-blue-400">here</a>. </p> 
+            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-blue-400">here</a>. </p>
           </div>
         <div className="text-sm font-semibold tracking-tight">
           Search:
@@ -268,14 +235,6 @@ export default function IndexPage() {
             </button>
             <button
                 type="button"
-                disabled={loading || nodes.length <= 1 || clickedSave}
-                onClick={handleSaveToHistory}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 `}
-              >
-                Save
-            </button>
-            <button
-                type="button"
                 onClick={() => setSidebarOpen(true)}
                 className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
               >
@@ -284,20 +243,19 @@ export default function IndexPage() {
             </div>
 
           </form>
-        </div>        
+        </div>
       </div>
       <div className="flex justify-between" ref={ref}>
-        {/* Desktop Sidebar */}
-        <Sidebar 
-          searchHistory={searchHistory} 
-          className="hidden lg:block w-1/4" 
+        <Sidebar
+          searchHistory={searchHistory}
+          className="hidden lg:block w-1/4"
           onHistorySelect={(historyItem) => {
             setNodes(historyItem.results.nodes);
             setEdges(historyItem.results.edges);
             setClickedSave(true);
           }}
+          setSearchHistory={setSearchHistory}
         />
-        {/* Mobile Sidebar */}
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
             <Transition.Child
@@ -339,15 +297,15 @@ export default function IndexPage() {
                       </button>
                     </div>
                   </Transition.Child>
-                  {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <Sidebar 
-                    searchHistory={searchHistory} 
-                    className="w-full bg-white" 
+                  <Sidebar
+                    searchHistory={searchHistory}
+                    className="w-full bg-white"
                     onHistorySelect={(historyItem) => {
                       setNodes(historyItem.nodes);
                       setEdges(historyItem.edges);
                       setClickedSave(true);
                     }}
+                    setSearchHistory={setSearchHistory}
                   />
                 </Dialog.Panel>
               </Transition.Child>

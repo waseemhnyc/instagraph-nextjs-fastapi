@@ -10,18 +10,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Function to save search history
-export function saveSearchHistory(savedHistory: SavedHistory[] = []) {
-  // Check if localStorage is defined
-  if (typeof localStorage !== 'undefined') {
-    // Convert the search history array into a JSON string
-    const savedHistoryJSON = JSON.stringify(savedHistory);
-
-    // Save the JSON string in localStorage
-    localStorage.setItem('savedHistory', savedHistoryJSON);
-  }
-}
-
 export async function saveChat(chat: Chat) {
   const session = (await auth()) as Session
 
@@ -36,10 +24,6 @@ export async function saveChat(chat: Chat) {
   } else {
     return;
   }
-  
-
-  console.log('session in saveSearchHistoryForUser', session)
-  // console.log('saveSearchHistoryForUser', savedHistory[0])
 }
 
 export enum ResultCode {

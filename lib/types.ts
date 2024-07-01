@@ -1,18 +1,3 @@
-// import { CoreMessage } from 'ai'
-// export type Message = CoreMessage & {
-//   id: string
-// }
-
-// export interface Chat extends Record<string, any> {
-//   id: string
-//   title: string
-//   createdAt: Date
-//   userId: string
-//   path: string
-//   messages: Message[]
-//   sharePath?: string
-// }
-
 export interface Chat extends Record<string, any> {
   id: string
   searchValue: string
@@ -28,11 +13,11 @@ export type ServerActionResult<Result> = Promise<
 >
 
 export type SearchResult = {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: ChatNode[];
+  edges: ChatEdge[];
 }
 
-export type Node = {
+export type ChatNode = {
   id: string;
   data: {
     label: string;
@@ -52,7 +37,7 @@ export type Node = {
   deletable: boolean;
 };
 
-export type Edge = {
+export type ChatEdge = {
   id: string;
   source: string;
   target: string;
