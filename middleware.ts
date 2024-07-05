@@ -16,36 +16,36 @@ export const config = {
 }
 
 export async function middleware(request: NextRequest) {
-  // const session = (await auth()) as Session
-  // const currentSessionKeyInCookies = cookies().get('session_key')?.value
+  const session = (await auth()) as Session
+  const currentSessionKeyInCookies = cookies().get('session_key')?.value
 
-  // if (shouldCheckUserStatus(request, session, currentSessionKeyInCookies)){
-  //   const currentUser = await getUser(session.user.email)
+  if (shouldCheckUserStatus(request, session, currentSessionKeyInCookies)){
+    const currentUser = await getUser(session.user.email)
 
-  //   if (!currentUser){
-  //     return new NextResponse(ResultCode.NotAuthorized, { status: 401 })
-  //   }
+    if (!currentUser){
+      return new NextResponse(ResultCode.NotAuthorized, { status: 401 })
+    }
 
-  //   try {
-  //     const externalServiceUrl = `${process.env.MY_RAILS_APP_URL}/chat/check_user_status?email=${currentUser.email}&session_key=${currentSessionKeyInCookies}`
+    try {
+      const externalServiceUrl = `${process.env.MY_RAILS_APP_URL}/chat/check_user_status?email=${currentUser.email}&session_key=${currentSessionKeyInCookies}`
 
-  //     const response = await fetch(externalServiceUrl)
+      const response = await fetch(externalServiceUrl)
 
-  //     const data = await response.json()
-  //     const isValidCookies = currentUser.session_keys.includes(currentSessionKeyInCookies)
+      const data = await response.json()
+      const isValidCookies = currentUser.session_keys.includes(currentSessionKeyInCookies)
 
-  //     await updateUserStatus(currentUser.email, data.status)
+      await updateUserStatus(currentUser.email, data.status)
 
-  //     if(isInvalidUserStatus(data.status, isValidCookies)) {
-  //       return redirectToLogOut(request)
-  //     }
+      if(isInvalidUserStatus(data.status, isValidCookies)) {
+        return redirectToLogOut(request)
+      }
 
-  //     return NextResponse.next()
-  //   } catch (error) {
-  //     console.error('Error fetching external data:', error)
-  //     return new NextResponse(ResultCode.InternalServerError, { status: 500 })
-  //   }
-  // }
+      return NextResponse.next()
+    } catch (error) {
+      console.error('Error fetching external data:', error)
+      return new NextResponse(ResultCode.InternalServerError, { status: 500 })
+    }
+  }
 }
 
 function shouldCheckUserStatus(request: NextRequest, session: Session, sessionKey: string | undefined): boolean {

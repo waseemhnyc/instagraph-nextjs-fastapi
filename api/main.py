@@ -14,10 +14,9 @@ import openai
 try:
 	from dotenv import load_dotenv, find_dotenv
 	load_dotenv(find_dotenv())
-	openai_api_key = os.getenv("OPENAI_API_KEY", "sk-proj-1GsHv17Dqg3VVihU0NNOT3BlbkFJ0XJtZyMw2jgpLUfBoKyf")
+	openai_api_key = os.getenv("OPENAI_API_KEY")
 except:
 	openai_api_key = os.environ.get('OPENAI_API_KEY')
-        
 
 model_35 = "gpt-3.5-turbo-1106"
 model_4 = "gpt-4-0613"
@@ -109,7 +108,7 @@ async def get_graph(message: str):
             messages=node_messages,
             response_model=Iterable[Node]
         )
-    
+
         async def generate():
             async for chunk in node_response:
                 if chunk is not None:

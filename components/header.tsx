@@ -1,19 +1,18 @@
 import * as React from 'react'
 import Link from 'next/link'
 
-import { cn } from '@/lib/utils'
 import { auth } from '@/auth'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
-  IconGitHub,
   IconNextChat,
   IconSeparator,
-  IconVercel
 } from '@/components/ui/icons'
 import { UserMenu } from '@/components/user-menu'
 import { SidebarMobile } from './sidebar-mobile'
 import { ChatHistory } from './chat-history'
 import { Session } from '@/lib/types'
+
+import { ThemeToggle } from "@/components/theme-toggle"
 
 async function UserOrLogin() {
   const session = (await auth()) as Session
@@ -24,7 +23,6 @@ async function UserOrLogin() {
           <SidebarMobile>
             <ChatHistory userId={session.user.id} />
           </SidebarMobile>
-          {/* <SidebarToggle /> */}
         </>
       ) : (
         <Link href="/new" rel="nofollow">
@@ -54,16 +52,12 @@ export function Header() {
           <UserOrLogin />
         </React.Suspense>
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <a
-          target="_blank"
-          href="https://github.com/vercel/nextjs-ai-chatbot/"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ variant: 'outline' }))}
-        >
-          <IconGitHub />
-          <span className="hidden ml-2 md:flex">GitHub</span>
-        </a>
+      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
+        <div className="flex flex-1 items-center justify-end space-x-4">
+          <nav className="flex items-center space-x-1">
+            <ThemeToggle />
+          </nav>
+        </div>
       </div>
     </header>
   )
