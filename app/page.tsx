@@ -50,7 +50,11 @@ export default function IndexPage() {
   useEffect(() => {
     const loadChatHistory = async () => {
       const chatHistory = await getChatsHistory()
-      setSearchHistory(chatHistory.length === 0 ? defaultSavedHistory : chatHistory)
+      if ('error' in chatHistory) {
+        setSearchHistory(defaultSavedHistory)
+      } else {
+        setSearchHistory(chatHistory.length === 0 ? defaultSavedHistory : chatHistory)
+      }
     }
     loadChatHistory()
   }, [])
@@ -239,7 +243,7 @@ export default function IndexPage() {
       </div>
       <div className="flex justify-between" ref={ref}>
         <Sidebar
-          searchHistory={searchHistory}
+          searchHistory = { searchHistory }
           className="hidden lg:block w-1/4"
           onHistorySelect={(historyItem) => {
             setNodes(historyItem.results.nodes)
@@ -290,7 +294,7 @@ export default function IndexPage() {
                     </div>
                   </Transition.Child>
                   <Sidebar
-                    searchHistory={searchHistory}
+                    searchHistory = { searchHistory }
                     className="w-full bg-white"
                     onHistorySelect={(historyItem) => {
                       setNodes(historyItem.nodes)

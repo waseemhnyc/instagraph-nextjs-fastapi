@@ -16,6 +16,10 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
     "heroku-frontend": "npm run build && npm run start"
   },
+  "engines": {
+    "node": "20.x",
+    "npm": "8.x"
+  },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
