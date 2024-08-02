@@ -1,16 +1,68 @@
 import { cn } from "@/lib/utils"
+import { toast } from 'sonner'
+import * as React from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ClearHistory } from '@/components/clear-history'
+import { clearChats } from '@/app/actions'
+import { IconSpinner } from '@/components/ui/icons'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { type Chat } from '@/lib/types'
+import { removeChat } from '@/app/actions'
 
-import { SavedHistory } from "@/data/savedHistory"
 
 interface SidebarProps {
-  searchHistory: SavedHistory[];
+  searchHistory: Chat[];
+  prevHistory: Chat[];
   className: string;
   onHistorySelect: (historyItem: any) => void;
+  setSearchHistory: (history: Chat[]) => void;
 }
 
-export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarProps) {
+export function Sidebar({ className, searchHistory, onHistorySelect, setSearchHistory }: SidebarProps) {
+  const router = useRouter()
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+  const [isRemovePending, startRemoveTransition] = React.useTransition()
+  const [currentDeleteItem, setCurrentDeleteItem] = React.useState<Chat | null>(null)
+
+  const handleDeleteClick = (item: Chat) => {
+    setCurrentDeleteItem(item)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!currentDeleteItem) return
+
+    startRemoveTransition(async () => {
+      const result = await removeChat({
+        id: currentDeleteItem.id,
+        path: currentDeleteItem.path
+      })
+
+      if (result && 'error' in result) {
+        toast.error(result.error)
+        return
+      }
+
+      setSearchHistory((prevHistory) => prevHistory.filter(item => item.id !== currentDeleteItem.id));
+      setDeleteDialogOpen(false)
+      router.refresh()
+      router.push('/')
+      toast.success('Chat deleted')
+    })
+  }
+
   return (
     <div className={cn("pb-12", className)}>
       <div className="space-y-4 py-4">
@@ -30,7 +82,7 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
                     onClick={() => onHistorySelect(searchItem)}
                   >
                     <div className="flex items-center">
-                      <svg 
+                      <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         fill="none"
@@ -46,13 +98,12 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
                     </div>
                   </Button>
                   </div>
-                  {/* TODO: Delete Button */}
-                  {/* <Button
+                  <Button
                     variant="ghost"
                     className="ml-2"
-                    // onClick={() => handleDelete(searchItem)}
+                    onClick={() => handleDeleteClick(searchItem)}
                   >
-                    <svg 
+                    <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
                       fill="none"
@@ -65,11 +116,37 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
                       <polyline points="3 6 5 6 21 6"></polyline>
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m6 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
                     </svg>
-                  </Button> */}
+                  </Button>
+                  <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete your chat message and remove your
+                          data from our servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isRemovePending}>
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={isRemovePending}
+                          onClick={handleDeleteConfirm}
+                        >
+                          {isRemovePending && <IconSpinner className="mr-2 animate-spin" />}
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ))}
             </div>
           </ScrollArea>
+          <div className="flex items-center justify-between p-4">
+            <ClearHistory clearChats={clearChats} isEnabled={searchHistory?.length > 0 } setSearchHistory={setSearchHistory} />
+          </div>
         </div>
       </div>
     </div>
