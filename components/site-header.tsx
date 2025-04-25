@@ -28,7 +28,7 @@ export function SiteHeader() {
                 className="hover:bg-primary/10 text-foreground/80 hover:text-foreground"
               >
                 <Icons.gitHub className="h-5 w-5 mr-1" />
-                <span className="hidden sm:inline-block">GitHub</span>
+                <span className="hidden sm:inline-block">Github</span>
               </Button>
             </Link>
             <Link
@@ -42,7 +42,7 @@ export function SiteHeader() {
                 className="hover:bg-primary/10 text-foreground/80 hover:text-foreground"
               >
                 <Icons.twitter className="h-5 w-5 mr-1 fill-current" />
-                <span className="hidden sm:inline-block">Twitter</span>
+                <span className="hidden sm:inline-block">Reach out</span>
               </Button>
             </Link>
             <ThemeToggle />

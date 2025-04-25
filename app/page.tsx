@@ -28,7 +28,7 @@ import { ReloadIcon } from "@radix-ui/react-icons"
 import { Sidebar } from "@/components/sidebar"
 import { saveSearchHistory, loadSearchHistory } from "@/lib/utils"
 import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
-import { XMarkIcon, RocketLaunchIcon, MagnifyingGlassIcon, BookmarkIcon, ClockIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, RocketLaunchIcon, MagnifyingGlassIcon, BookmarkIcon, ClockIcon, ArrowsPointingInIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 
 import { Alert, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -47,6 +47,7 @@ export default function IndexPage() {
   const [searchHistory, setSearchHistory] = useState<SavedHistory[]>([]);
   const [clickedSave, setClickedSave] = useState(false);
   const [eventSource, setEventSource] = useState<EventSource | null>(null);
+  const [showAbout, setShowAbout] = useState(false);
 
   const ref = createRef<HTMLDivElement>();
 
@@ -274,10 +275,24 @@ export default function IndexPage() {
           <CardDescription className="text-base">
             A knowledge graph offers a non-linear structure to information. Helpful for learning and understanding.
           </CardDescription>
-          <div className='text-xs text-muted-foreground mt-2'>
-            <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX2]</sup></a></p>
-            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-primary hover:text-primary/80 transition-colors">here</a>. </p> 
+          <div className="flex items-center mt-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="flex items-center text-xs text-muted-foreground" 
+              onClick={() => setShowAbout(!showAbout)}
+            >
+              <InformationCircleIcon className="h-4 w-4 mr-1" />
+              {showAbout ? 'Hide' : 'About this project'}
+            </Button>
           </div>
+          
+          {showAbout && (
+            <div className='text-xs text-muted-foreground mt-2 p-3 bg-muted/50 rounded-md'>
+              <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX2]</sup></a></p>
+              <p className="mt-1">If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-primary hover:text-primary/80 transition-colors">here</a>. </p> 
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form className='space-y-3' onSubmit={handleSubmit}>
