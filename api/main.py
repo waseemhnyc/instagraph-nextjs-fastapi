@@ -12,12 +12,13 @@ import instructor
 import openai
 
 try:
-	from dotenv import load_dotenv, find_dotenv
-	load_dotenv(find_dotenv())
-	openai_api_key = os.getenv("OPENAI_API_KEY")
+    from dotenv import load_dotenv, find_dotenv
+
+    load_dotenv(find_dotenv())
+    openai_api_key = os.getenv("OPENAI_API_KEY")
 except:
-	openai_api_key = os.environ.get('OPENAI_API_KEY')
-        
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+
 
 model_35 = "gpt-3.5-turbo-1106"
 model_4 = "gpt-4-0613"
@@ -34,7 +35,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-aclient = instructor.patch(openai.AsyncClient(api_key=openai_api_key), mode=instructor.Mode.FUNCTIONS)
+aclient = instructor.patch(
+    openai.AsyncClient(api_key=openai_api_key), mode=instructor.Mode.FUNCTIONS
+)
+
 
 class Edge(BaseModel):
     """
@@ -43,15 +47,22 @@ class Edge(BaseModel):
 
     No cycles should exist. A Node may be linked to another Node only once in the entire graph.
     """
+
     target: str = Field(description="Unique identifier of the target Node.")
-    label: str = Field(description="Descriptive label of the Edge, indicating the relationship type.")
-    color: str = Field(description="Color code (e.g., hexadecimal) representing the Edge's visual color.")
+    label: str = Field(
+        description="Descriptive label of the Edge, indicating the relationship type."
+    )
+    color: str = Field(
+        description="Color code (e.g., hexadecimal) representing the Edge's visual color."
+    )
+
 
 class Node(BaseModel):
     """
     Represents a Node in a knowledge graph. The graph contains a minimum of 8 and a maximum of 15 Nodes.
     Nodes are the fundamental units in the graph, each with unique attributes and connections.
     """
+
     id: str = Field(description="Unique identifier for the Node.")
     label: str = Field(description="Descriptive label or name of the Node.")
     stroke: str = Field(default="#000000", description="Border color of the Node.")
@@ -59,8 +70,9 @@ class Node(BaseModel):
     x: int = Field(description="Horizontal position of the Node in the graph.")
     y: int = Field(description="Vertical position of the Node in the graph.")
     adjacencies: List[Edge] = Field(
-         description="List of Edges to other Nodes, defining the Node's connections. No cycles should exist. A Node may be linked to another Node only once in the entire graph."
+        description="List of Edges to other Nodes, defining the Node's connections. No cycles should exist. A Node may be linked to another Node only once in the entire graph."
     )
+
 
 @app.get("/")
 async def root():
@@ -68,7 +80,7 @@ async def root():
 
 
 @app.get("/api/get_graph/{message}")
-async def get_graph(message: str):
+async def get_graph(message: str | None = None):
     if not message:
         raise HTTPException(status_code=400, detail="Invalid input")
     try:
@@ -107,9 +119,9 @@ async def get_graph(message: str):
             model=model_4o,
             stream=True,
             messages=node_messages,
-            response_model=Iterable[Node]
+            response_model=Iterable[Node],
         )
-    
+
         async def generate():
             async for chunk in node_response:
                 if chunk is not None:

@@ -12,21 +12,26 @@ import ReactFlow, {
   Connection,
   Edge,
   Node,
+  Panel,
+  NodeChange,
+  NodePositionChange,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import DownloadButton from '@/components/ui/download-button';
 import { ReloadIcon } from "@radix-ui/react-icons"
 import { Sidebar } from "@/components/sidebar"
 import { saveSearchHistory, loadSearchHistory } from "@/lib/utils"
 import { defaultSavedHistory, SavedHistory } from '@/data/savedHistory';
-import { XMarkIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, RocketLaunchIcon, MagnifyingGlassIcon, BookmarkIcon, ClockIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline'
 
 import { Alert, AlertTitle } from "@/components/ui/alert"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
 
 export default function IndexPage() {
@@ -69,27 +74,74 @@ export default function IndexPage() {
       setEdges(initialEdges);
       setClickedSave(true);
     }
-
   }, []);
 
+  // Custom node movement constraint handler
+  const onNodesChangeCustom = useCallback((changes: NodeChange[]) => {
+    const constrainedChanges = changes.map(change => {
+      // Only constrain position changes
+      if (change.type === 'position' && change.position) {
+        const posChange = change as NodePositionChange;
+        // Constrain x and y to be within a reasonable range
+        // Add null checks to handle possibly undefined position
+        const newX = Math.max(-300, Math.min(300, posChange.position?.x || 0));
+        const newY = Math.max(-300, Math.min(300, posChange.position?.y || 0));
+        
+        return {
+          ...posChange,
+          position: { x: newX, y: newY }
+        };
+      }
+      return change;
+    });
+    
+    onNodesChange(constrainedChanges);
+  }, [onNodesChange]);
 
-  const centerGraph = () => {
+  // Centralize graph with boundaries
+  const centerGraphWithBoundaries = () => {
     if (reactFlowInstance) {
-      reactFlowInstance.fitView();
-      reactFlowInstance
+      // First center the graph
+      reactFlowInstance.fitView({ 
+        padding: 0.2, 
+        includeHiddenNodes: false,
+        minZoom: 0.5,  // Don't zoom out too far
+        maxZoom: 1.5   // Don't zoom in too far
+      });
+      
+      // Then enforce zoom limits
+      if (reactFlowInstance.getZoom() < 0.5) {
+        reactFlowInstance.setViewport({ 
+          x: reactFlowInstance.getViewport().x,
+          y: reactFlowInstance.getViewport().y,
+          zoom: 0.5 
+        });
+      }
     }
   };
 
   useEffect(() => {
-    centerGraph();
+    centerGraphWithBoundaries();
   }, [nodes, edges]);
 
+  // Modified version of the original effect to constrain node positions
   useEffect(() => {
     if (currentNode) {
       setNodes((prevNodes) => {
         const nodeExists = prevNodes.some(node => node.id === currentNode.id);
         if (!nodeExists) {
-          const newNode = { ...currentNode, id: `${currentNode.id}` };
+          // Constrain the node position before adding
+          const constrainedPosition = {
+            x: Math.max(-300, Math.min(300, currentNode.position.x)),
+            y: Math.max(-300, Math.min(300, currentNode.position.y))
+          };
+          
+          const newNode = { 
+            ...currentNode, 
+            id: `${currentNode.id}`,
+            position: constrainedPosition 
+          };
+          
           return [...prevNodes, newNode];
         }
         return prevNodes;
@@ -107,19 +159,45 @@ export default function IndexPage() {
     setEdges([]);
 
     try {
-
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'https://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8000' : 'https://instagraph-fast-api.onrender.com';
       const url = `${baseUrl}/api/get_graph/${encodeURIComponent(userInput)}`;
 
       const ees = new EventSource(url);
       setEventSource(ees);
       
+      let nodeCount = 0;
+      const nodePositions: Record<string, {x: number, y: number}> = {};
+      
       ees.onmessage = (event) => {
         if (event.data === '[DONE]') {
           setLoading(false);
           ees.close();
+          
+          // After all nodes are added, make sure the graph is centered
+          setTimeout(() => {
+            if (reactFlowInstance) {
+              reactFlowInstance.fitView({ padding: 0.2 });
+            }
+          }, 100);
         } else {
             const data = JSON.parse(event.data);
+            
+            // Constrain node positions to be within a reasonable area
+            // Calculate a grid-like position if the node position seems extreme
+            if (Math.abs(data.x) > 500 || Math.abs(data.y) > 500) {
+              const gridCols = 3;
+              const gridRows = Math.ceil(8 / gridCols); // Assuming minimum 8 nodes
+              const xPos = (nodeCount % gridCols) * 200 - 200;
+              const yPos = Math.floor(nodeCount / gridCols) * 150 - 150;
+              
+              data.x = xPos;
+              data.y = yPos;
+            }
+            
+            // Save position for edge references
+            nodePositions[data.id] = { x: data.x, y: data.y };
+            nodeCount++;
+            
             const current_node = { 
               id: data.id,
               resizing: true,
@@ -127,11 +205,23 @@ export default function IndexPage() {
               style: { 
                 color: data.stroke,  
                 background: data.background, 
-                width: '100px',
+                minWidth: '120px',
+                width: 'auto',
+                maxWidth: '200px',
+                padding: '12px',
+                borderRadius: '8px',
+                border: `2px solid ${data.stroke}`,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                fontSize: '14px',
+                fontWeight: '500',
+                textAlign: 'center' as const,
+                whiteSpace: 'normal',
+                overflow: 'visible',
+                lineHeight: '1.3',
               }, 
               data: { label: data.label}, 
               draggable: true, 
-              selectable: false, 
+              selectable: true, 
               deletable: false 
             }
             setCurrentNode(current_node);
@@ -140,6 +230,7 @@ export default function IndexPage() {
                 id: string; 
                 target: string; 
                 label: string; 
+                color: string;
               }) => {
               adjacency.source = data.id;
               setEdges((oldEdges) => addEdge({
@@ -147,6 +238,9 @@ export default function IndexPage() {
                 source: adjacency.source, 
                 target: adjacency.target, 
                 label: adjacency.label,
+                labelStyle: { fill: adjacency.color, fontWeight: 500 },
+                style: { stroke: adjacency.color, strokeWidth: 2 },
+                animated: true,
               }, oldEdges));
             });
         }
@@ -159,8 +253,6 @@ export default function IndexPage() {
     } catch (error) {
       console.error(error);
       setLoading(false);
-    } finally {
-      
     }
   };
 
@@ -173,158 +265,242 @@ export default function IndexPage() {
   };
 
   return (
-    <section className="px-2 md:container grid items-center gap-6 pb-8 pt-6 md:py-6 my-6 border rounded-md">
-      <div className="flex flex-col items-start gap-2">
-          <p className='text-lg font-bold'>Create an AI Generated Knowledge Graph!</p>
-          <Alert>
-            <RocketLaunchIcon className="h-4 w-4" />
-            <AlertTitle>A knowledge graph offers a non-linear structure to information. Helpful for learning and understanding.</AlertTitle>
-          </Alert>
-          <div className='text-xs pb-3'>
-            <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className=" text-blue-400"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-blue-400"><sup>[EX2]</sup></a></p>
-            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-blue-400">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-blue-400">here</a>. </p> 
+    <section className="container mx-auto my-8">
+      <Card className="shadow-lg border-0">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-2xl font-bold flex items-center">
+            Create an AI Generated Knowledge Graph
+          </CardTitle>
+          <CardDescription className="text-base">
+            A knowledge graph offers a non-linear structure to information. Helpful for learning and understanding.
+          </CardDescription>
+          <div className='text-xs text-muted-foreground mt-2'>
+            <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX2]</sup></a></p>
+            <p>If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-primary hover:text-primary/80 transition-colors">here</a>. </p> 
           </div>
-        <div className="text-sm font-semibold tracking-tight">
-          Search:
-        </div>
-        <div className='w-full items-center'>
-          <form className='flex flex-col' onSubmit={handleSubmit}>
-          <Input
-              type="text"
-              placeholder="Enter your search term here"
-              className="mr-2 md:mr-6 w-full"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-            />
-            <div className='flex pt-2 gap-2'>
-            <button
+        </CardHeader>
+        <CardContent>
+          <form className='space-y-3' onSubmit={handleSubmit}>
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Enter your search term here (e.g., Quantum Physics, Machine Learning)"
+                className="pl-10 pr-4 py-6 text-base rounded-lg transition-all shadow-sm border border-input"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+              />
+            </div>
+            <div className='flex flex-wrap gap-2'>
+              <Button
                 type="submit"
                 disabled={loading}
-                className={`${buttonVariants({ variant: "default", size: "sm" })} md:mt-0` }
+                size="sm"
+                className="font-medium transition-all"
               >
-                {loading ? <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "Search"}
-            </button>
-            <button
-                type="button"
-                disabled={!loading}
-                onClick={handleCancel}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0`}
-              >
-                Cancel
-            </button>
-            <button
+                {loading ? (
+                  <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Generating graph...</>
+                ) : (
+                  <>Generate Graph</>
+                )}
+              </Button>
+              {loading && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                  className="font-medium"
+                >
+                  <XMarkIcon className="mr-1 h-4 w-4" /> Cancel
+                </Button>
+              )}
+              <Button
                 type="button"
                 disabled={loading || nodes.length <= 1 || clickedSave}
+                variant="outline"
+                size="sm"
                 onClick={handleSaveToHistory}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
+                className="font-medium"
               >
-                Save
-            </button>
-            <button
+                <BookmarkIcon className="mr-1 h-4 w-4" /> Save
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className={`${buttonVariants({ variant: "secondary", size: "sm" })} md:mt-0 hidden lg:visible`}
+                className="lg:hidden font-medium"
               >
-                History
-            </button>
+                <ClockIcon className="mr-1 h-4 w-4" /> History
+              </Button>
             </div>
-
           </form>
-        </div>        
-      </div>
-      <div className="flex justify-between" ref={ref}>
-        {/* Desktop Sidebar */}
-        <Sidebar 
-          searchHistory={searchHistory} 
-          className="hidden lg:block w-1/4" 
-          onHistorySelect={(historyItem) => {
-            setNodes(historyItem.results.nodes);
-            setEdges(historyItem.results.edges);
-            setClickedSave(true);
-          }}
-        />
-        {/* Mobile Sidebar */}
-        <Transition.Root show={sidebarOpen} as={Fragment}>
-          <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
-            <Transition.Child
-              as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-gray-900/80" />
-            </Transition.Child>
+          
+          <div className="flex mt-6 gap-4" ref={ref}>
+            {/* Desktop Sidebar */}
+            <Sidebar 
+              searchHistory={searchHistory} 
+              className="hidden lg:block w-1/4 border rounded-lg py-3 px-2" 
+              onHistorySelect={(historyItem) => {
+                setNodes(historyItem.results.nodes);
+                setEdges(historyItem.results.edges);
+                setClickedSave(true);
+              }}
+            />
+            
+            {/* Mobile Sidebar */}
+            <Transition.Root show={sidebarOpen} as={Fragment}>
+              <Dialog as="div" className="relative z-50 lg:hidden" onClose={setSidebarOpen}>
+                <Transition.Child
+                  as={Fragment}
+                  enter="transition-opacity ease-linear duration-300"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="transition-opacity ease-linear duration-300"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
+                </Transition.Child>
 
-            <div className="fixed inset-0 flex">
-              <Transition.Child
-                as={Fragment}
-                enter="transition ease-in-out duration-300 transform"
-                enterFrom="-translate-x-full"
-                enterTo="translate-x-0"
-                leave="transition ease-in-out duration-300 transform"
-                leaveFrom="translate-x-0"
-                leaveTo="-translate-x-full"
-              >
-                <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
+                <div className="fixed inset-0 flex">
                   <Transition.Child
                     as={Fragment}
-                    enter="ease-in-out duration-300"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="ease-in-out duration-300"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
+                    enter="transition ease-in-out duration-300 transform"
+                    enterFrom="-translate-x-full"
+                    enterTo="translate-x-0"
+                    leave="transition ease-in-out duration-300 transform"
+                    leaveFrom="translate-x-0"
+                    leaveTo="-translate-x-full"
                   >
-                    <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                      <button type="button" className="-m-2.5 p-2.5" onClick={() => setSidebarOpen(false)}>
-                        <span className="sr-only">Close sidebar</span>
-                        <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                      </button>
-                    </div>
+                    <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
+                      <Transition.Child
+                        as={Fragment}
+                        enter="ease-in-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in-out duration-300"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
+                          <button type="button" className="-m-2.5 p-2.5" onClick={() => setSidebarOpen(false)}>
+                            <span className="sr-only">Close sidebar</span>
+                            <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </Transition.Child>
+                      {/* Sidebar component, swap this element with another sidebar if you like */}
+                      <Sidebar 
+                        searchHistory={searchHistory} 
+                        className="w-full bg-background rounded-r-lg shadow-xl" 
+                        onHistorySelect={(historyItem) => {
+                          setNodes(historyItem.results.nodes);
+                          setEdges(historyItem.results.edges);
+                          setClickedSave(true);
+                          setSidebarOpen(false);
+                        }}
+                      />
+                    </Dialog.Panel>
                   </Transition.Child>
-                  {/* Sidebar component, swap this element with another sidebar if you like */}
-                  <Sidebar 
-                    searchHistory={searchHistory} 
-                    className="w-full bg-white" 
-                    onHistorySelect={(historyItem) => {
-                      setNodes(historyItem.nodes);
-                      setEdges(historyItem.edges);
-                      setClickedSave(true);
-                    }}
-                  />
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </Dialog>
-        </Transition.Root>
-        <div className="position-absolute w-full h-[700px]">
-          <div className="w-full h-[75%] md:h-full">
-            <div className="dndflow border shadow-lg rounded-lg md:p-4">
-              <ReactFlowProvider>
-                <div className="reactflow-wrapper" ref={reactFlowWrapper}>
-                  <ReactFlow
-                    nodes={nodes}
-                    edges={edges}
-                    onNodesChange={onNodesChange}
-                    onEdgesChange={onEdgesChange}
-                    onConnect={onConnect}
-                    onInit={onInit}
-                    fitView
-                  >
-                    <DownloadButton disabled={loading || nodes.length <= 1}/>
-                    <Controls position={"top-right"}/>
-                    <MiniMap nodeStrokeWidth={3} zoomable pannable />
-                    <Background variant={BackgroundVariant.Lines} gap={15} size={1} />
-                  </ReactFlow>
                 </div>
-              </ReactFlowProvider>
+              </Dialog>
+            </Transition.Root>
+            
+            <div className="w-full">
+              <div className="w-full h-[700px] bg-white rounded-lg shadow-md border overflow-hidden">
+                <ReactFlowProvider>
+                  <div className="reactflow-wrapper h-full" ref={reactFlowWrapper}>
+                    <ReactFlow
+                      nodes={nodes}
+                      edges={edges}
+                      onNodesChange={onNodesChangeCustom}
+                      onEdgesChange={onEdgesChange}
+                      onConnect={onConnect}
+                      onInit={(instance) => {
+                        setReactFlowInstance(instance);
+                        // Set initial viewport with limits
+                        instance.setViewport({ x: 0, y: 0, zoom: 0.8 });
+                      }}
+                      fitView
+                      fitViewOptions={{ 
+                        padding: 0.2, 
+                        minZoom: 0.5, 
+                        maxZoom: 1.5 
+                      }}
+                      proOptions={{ hideAttribution: true }}
+                      nodesDraggable={true}
+                      elementsSelectable={true}
+                      zoomOnScroll={true}
+                      panOnScroll={true}
+                      className="bg-gradient-to-br from-gray-50 to-gray-100"
+                      snapToGrid={true}
+                      snapGrid={[15, 15]}
+                      minZoom={0.5}
+                      maxZoom={1.5}
+                      defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+                      translateExtent={[[-500, -500], [500, 500]]} // Critical: restrict the panning area
+                      onNodeDragStop={() => {
+                        setTimeout(() => {
+                          if (reactFlowInstance) {
+                            centerGraphWithBoundaries();
+                          }
+                        }, 100);
+                      }}
+                      onPaneClick={(event) => {
+                        // Reset the view if users click in empty areas of the graph
+                        if (event.target === event.currentTarget) {
+                          centerGraphWithBoundaries();
+                        }
+                      }}
+                    >
+                      <Panel position="top-left" className="flex space-x-2 m-3">
+                        <DownloadButton disabled={loading || nodes.length <= 1}/>
+                        <Button 
+                          onClick={() => {
+                            if (reactFlowInstance) {
+                              reactFlowInstance.fitView({ padding: 0.2, includeHiddenNodes: false });
+                            }
+                          }}
+                          variant="secondary"
+                          size="sm"
+                          disabled={loading || nodes.length <= 1}
+                          className="shadow-md flex items-center gap-1"
+                        >
+                          <ArrowsPointingInIcon className="h-4 w-4 mr-1" />
+                          Reset View
+                        </Button>
+                      </Panel>
+                      <Controls position="top-right" className="m-3 shadow-md" />
+                      <MiniMap 
+                        nodeStrokeWidth={3} 
+                        zoomable 
+                        pannable 
+                        className="shadow-md rounded-lg" 
+                        nodeColor={(node) => {
+                          return node.style?.background as string || '#eee';
+                        }}
+                      />
+                      <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
+                      
+                      {!loading && nodes.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="text-center text-gray-500 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm pointer-events-auto">
+                            <RocketLaunchIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                            <p className="text-lg font-medium">Enter a topic above to generate a knowledge graph</p>
+                            <p className="text-sm mt-2">Try topics like "Quantum Physics" or "Machine Learning"</p>
+                          </div>
+                        </div>
+                      )}
+                    </ReactFlow>
+                  </div>
+                </ReactFlowProvider>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </section>
   )
 }

@@ -1,12 +1,13 @@
 import React from 'react';
 import { Panel, useReactFlow, getRectOfNodes, getTransformForBounds } from 'reactflow';
-import { buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import { toPng } from 'html-to-image';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
 function downloadImage(dataUrl: string) {
   const a = document.createElement('a');
-
-  a.setAttribute('download', 'reactflow.png');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  a.setAttribute('download', `knowledge-graph-${timestamp}.png`);
   a.setAttribute('href', dataUrl);
   a.click();
 }
@@ -39,17 +40,16 @@ function DownloadButton({ disabled = true}) {
   };
 
   return (
-    <Panel position="top-left">
-      <button 
-        onClick={onClick}
-        type="button"
-        disabled={disabled}
-        className={`${buttonVariants({ variant: "secondary", size: "sm" })} download-btn mt-2 md:mt-0`}
+    <Button 
+      onClick={onClick}
+      variant="secondary"
+      size="sm"
+      disabled={disabled}
+      className="shadow-md flex items-center gap-1"
     >
-
-        Download Image
-      </button>
-    </Panel>
+      <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+      Download PNG
+    </Button>
   );
 }
 

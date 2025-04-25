@@ -1,9 +1,12 @@
-
 export type SavedHistory = {
   searchValue: string,
   results: {
     nodes: {}[],
     edges: {}[]
+  },
+  layoutSettings?: {
+    forceStrength?: number,
+    forceDistance?: number
   }
 }
 
