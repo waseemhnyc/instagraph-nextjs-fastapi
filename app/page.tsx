@@ -504,7 +504,7 @@ export default function IndexPage() {
                           <div className="text-center text-gray-500 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm pointer-events-auto">
                             <RocketLaunchIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                             <p className="text-lg font-medium">Enter a topic above to generate a knowledge graph</p>
-                            <p className="text-sm mt-2">Try topics like "Quantum Physics" or "Machine Learning"</p>
+                            <p className="text-sm mt-2">Try topics like &quot;Quantum Physics&quot; or &quot;Machine Learning&quot;</p>
                           </div>
                         </div>
                       )}
