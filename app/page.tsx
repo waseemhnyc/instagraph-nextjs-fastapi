@@ -216,7 +216,7 @@ export default function IndexPage() {
                 fontSize: '14px',
                 fontWeight: '500',
                 textAlign: 'center' as const,
-                whiteSpace: 'normal',
+                whiteSpace: 'normal' as const,
                 overflow: 'visible',
                 lineHeight: '1.3',
               }, 
@@ -267,41 +267,41 @@ export default function IndexPage() {
 
   return (
     <section className="container mx-auto my-8">
-      <Card className="shadow-lg border-0">
+      <Card className="border-0 shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="text-2xl font-bold flex items-center">
+          <CardTitle className="flex items-center text-2xl font-bold">
             Create an AI Generated Knowledge Graph
           </CardTitle>
           <CardDescription className="text-base">
             A knowledge graph offers a non-linear structure to information. Helpful for learning and understanding.
           </CardDescription>
-          <div className="flex items-center mt-2">
+          <div className="mt-2 flex items-center">
             <Button 
               variant="ghost" 
               size="sm"
               className="flex items-center text-xs text-muted-foreground" 
               onClick={() => setShowAbout(!showAbout)}
             >
-              <InformationCircleIcon className="h-4 w-4 mr-1" />
+              <InformationCircleIcon className="mr-1 size-4" />
               {showAbout ? 'Hide' : 'About this project'}
             </Button>
           </div>
           
           {showAbout && (
-            <div className='text-xs text-muted-foreground mt-2 p-3 bg-muted/50 rounded-md'>
-              <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors"><sup>[EX2]</sup></a></p>
-              <p className="mt-1">If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="underline text-primary hover:text-primary/80 transition-colors">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="underline text-primary hover:text-primary/80 transition-colors">here</a>. </p> 
+            <div className='mt-2 rounded-md bg-muted/50 p-3 text-xs text-muted-foreground'>
+              <p>This project was inspired by <a href="https://twitter.com/yoheinakajima" target="_blank" rel="noopener noreferrer" className="text-primary underline transition-colors hover:text-primary/80">@yoheinakajima</a> creator of <a href="https://instagraph.ai" target="_blank" rel="noopener noreferrer" className="text-primary underline transition-colors hover:text-primary/80">instagraph.ai</a>. <a href="https://twitter.com/yoheinakajima/status/1706848028014068118" target="_blank" rel="noopener noreferrer" className="text-primary transition-colors hover:text-primary/80"><sup>[EX1]</sup></a> <a href="https://twitter.com/yoheinakajima/status/1701351068817301922" target="_blank" rel="noopener noreferrer" className="text-primary transition-colors hover:text-primary/80"><sup>[EX2]</sup></a></p>
+              <p className="mt-1">If you have any questions or suggestions, reach out via <a href="https://twitter.com/waseemhnyc" target="_blank" rel="noopener noreferrer" className="text-primary underline transition-colors hover:text-primary/80">Twitter</a> or <a href="https://tally.so#tally-open=mY0676&tally-layout=modal&tally-width=1000&tally-emoji-text=👋&tally-emoji-animation=wave&tally-auto-close=0" className="text-primary underline transition-colors hover:text-primary/80">here</a>. </p> 
             </div>
           )}
         </CardHeader>
         <CardContent>
           <form className='space-y-3' onSubmit={handleSubmit}>
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <MagnifyingGlassIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Enter your search term here (e.g., Quantum Physics, Machine Learning)"
-                className="pl-10 pr-4 py-6 text-base rounded-lg transition-all shadow-sm border border-input"
+                className="rounded-lg border border-input py-6 pl-10 pr-4 text-base shadow-sm transition-all"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
               />
@@ -314,7 +314,7 @@ export default function IndexPage() {
                 className="font-medium transition-all"
               >
                 {loading ? (
-                  <><ReloadIcon className="mr-2 h-4 w-4 animate-spin" /> Generating graph...</>
+                  <><ReloadIcon className="mr-2 size-4 animate-spin" /> Generating graph...</>
                 ) : (
                   <>Generate Graph</>
                 )}
@@ -327,7 +327,7 @@ export default function IndexPage() {
                   onClick={handleCancel}
                   className="font-medium"
                 >
-                  <XMarkIcon className="mr-1 h-4 w-4" /> Cancel
+                  <XMarkIcon className="mr-1 size-4" /> Cancel
                 </Button>
               )}
               <Button
@@ -338,25 +338,25 @@ export default function IndexPage() {
                 onClick={handleSaveToHistory}
                 className="font-medium"
               >
-                <BookmarkIcon className="mr-1 h-4 w-4" /> Save
+                <BookmarkIcon className="mr-1 size-4" /> Save
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden font-medium"
+                className="font-medium lg:hidden"
               >
-                <ClockIcon className="mr-1 h-4 w-4" /> History
+                <ClockIcon className="mr-1 size-4" /> History
               </Button>
             </div>
           </form>
           
-          <div className="flex mt-6 gap-4" ref={ref}>
+          <div className="mt-6 flex gap-4" ref={ref}>
             {/* Desktop Sidebar */}
             <Sidebar 
               searchHistory={searchHistory} 
-              className="hidden lg:block w-1/4 border rounded-lg py-3 px-2" 
+              className="hidden w-1/4 rounded-lg border px-2 py-3 lg:block" 
               onHistorySelect={(historyItem) => {
                 setNodes(historyItem.results.nodes);
                 setEdges(historyItem.results.edges);
@@ -402,14 +402,14 @@ export default function IndexPage() {
                         <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
                           <button type="button" className="-m-2.5 p-2.5" onClick={() => setSidebarOpen(false)}>
                             <span className="sr-only">Close sidebar</span>
-                            <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                            <XMarkIcon className="size-6 text-white" aria-hidden="true" />
                           </button>
                         </div>
                       </Transition.Child>
                       {/* Sidebar component, swap this element with another sidebar if you like */}
                       <Sidebar 
                         searchHistory={searchHistory} 
-                        className="w-full bg-background rounded-r-lg shadow-xl" 
+                        className="w-full rounded-r-lg bg-background shadow-xl" 
                         onHistorySelect={(historyItem) => {
                           setNodes(historyItem.results.nodes);
                           setEdges(historyItem.results.edges);
@@ -424,7 +424,7 @@ export default function IndexPage() {
             </Transition.Root>
             
             <div className="w-full">
-              <div className="w-full h-[700px] bg-white rounded-lg shadow-md border overflow-hidden">
+              <div className="h-[700px] w-full overflow-hidden rounded-lg border bg-white shadow-md">
                 <ReactFlowProvider>
                   <div className="reactflow-wrapper h-full" ref={reactFlowWrapper}>
                     <ReactFlow
@@ -470,7 +470,7 @@ export default function IndexPage() {
                         }
                       }}
                     >
-                      <Panel position="top-left" className="flex space-x-2 m-3">
+                      <Panel position="top-left" className="m-3 flex space-x-2">
                         <DownloadButton disabled={loading || nodes.length <= 1}/>
                         <Button 
                           onClick={() => {
@@ -481,9 +481,9 @@ export default function IndexPage() {
                           variant="secondary"
                           size="sm"
                           disabled={loading || nodes.length <= 1}
-                          className="shadow-md flex items-center gap-1"
+                          className="flex items-center gap-1 shadow-md"
                         >
-                          <ArrowsPointingInIcon className="h-4 w-4 mr-1" />
+                          <ArrowsPointingInIcon className="mr-1 size-4" />
                           Reset View
                         </Button>
                       </Panel>
@@ -492,7 +492,7 @@ export default function IndexPage() {
                         nodeStrokeWidth={3} 
                         zoomable 
                         pannable 
-                        className="shadow-md rounded-lg" 
+                        className="rounded-lg shadow-md" 
                         nodeColor={(node) => {
                           return node.style?.background as string || '#eee';
                         }}
@@ -500,11 +500,11 @@ export default function IndexPage() {
                       <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e0e0e0" />
                       
                       {!loading && nodes.length === 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="text-center text-gray-500 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm pointer-events-auto">
-                            <RocketLaunchIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div className="pointer-events-auto rounded-xl bg-white/80 p-6 text-center text-gray-500 shadow-sm backdrop-blur-sm">
+                            <RocketLaunchIcon className="mx-auto mb-4 size-12 text-gray-300" />
                             <p className="text-lg font-medium">Enter a topic above to generate a knowledge graph</p>
-                            <p className="text-sm mt-2">Try topics like &quot;Quantum Physics&quot; or &quot;Machine Learning&quot;</p>
+                            <p className="mt-2 text-sm">Try topics like &quot;Quantum Physics&quot; or &quot;Machine Learning&quot;</p>
                           </div>
                         </div>
                       )}
