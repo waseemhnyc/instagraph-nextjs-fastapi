@@ -12,9 +12,9 @@ interface MainNavProps {
 export function MainNav({ items }: MainNavProps) {
   return (
     <div className="flex gap-6 md:gap-10">
-      <Link href="/" className="flex items-start flex-col">
-        <span className="font-bold text-xl">{siteConfig.name}</span>
-        <span className="text-xs text-gray-500 tracking-tighter -mt-1">{siteConfig.subName}</span>
+      <Link href="/" className="flex flex-col items-start">
+        <span className="text-xl font-bold">{siteConfig.name}</span>
+        <span className="-mt-1 text-xs tracking-tighter text-gray-500">{siteConfig.subName}</span>
       </Link>
       {items?.length ? (
         <nav className="flex gap-6">

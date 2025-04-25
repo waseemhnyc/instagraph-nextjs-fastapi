@@ -9,11 +9,11 @@ import { RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 export function SiteHeader() {
   return (
-    <header className="bg-background sticky top-0 z-40 w-full border-b shadow-sm">
+    <header className="sticky top-0 z-40 w-full border-b bg-background shadow-sm">
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <div className="flex items-center space-x-2">
-          <RocketLaunchIcon className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl text-foreground hidden sm:inline-block">InstaGraph</span>
+          <RocketLaunchIcon className="size-6 text-primary" />
+          <span className="hidden text-xl font-bold text-foreground sm:inline-block">InstaGraph</span>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
@@ -25,9 +25,9 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hover:bg-primary/10 text-foreground/80 hover:text-foreground"
+                className="text-foreground/80 hover:bg-primary/10 hover:text-foreground"
               >
-                <Icons.gitHub className="h-5 w-5 mr-1" />
+                <Icons.gitHub className="mr-1 size-5" />
                 <span className="hidden sm:inline-block">Github</span>
               </Button>
             </Link>
@@ -39,9 +39,9 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hover:bg-primary/10 text-foreground/80 hover:text-foreground"
+                className="text-foreground/80 hover:bg-primary/10 hover:text-foreground"
               >
-                <Icons.twitter className="h-5 w-5 mr-1 fill-current" />
+                <Icons.twitter className="mr-1 size-5 fill-current" />
                 <span className="hidden sm:inline-block">Reach out</span>
               </Button>
             </Link>

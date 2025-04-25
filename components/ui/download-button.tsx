@@ -45,9 +45,9 @@ function DownloadButton({ disabled = true}) {
       variant="secondary"
       size="sm"
       disabled={disabled}
-      className="shadow-md flex items-center gap-1"
+      className="flex items-center gap-1 shadow-md"
     >
-      <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+      <ArrowDownTrayIcon className="mr-1 size-4" />
       Download PNG
     </Button>
   );

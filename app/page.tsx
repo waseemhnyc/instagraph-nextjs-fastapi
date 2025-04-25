@@ -52,7 +52,7 @@ export default function IndexPage() {
   const ref = createRef<HTMLDivElement>();
 
   const onInit = (reactFlowInstance: any) => setReactFlowInstance(reactFlowInstance);
-  const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), []);
+  const onConnect = useCallback((params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   const handleSaveToHistory = () => {
     const newSearchHistory = [{ searchValue: submittedUserInput, results: { nodes, edges } }, ...searchHistory];
@@ -75,7 +75,7 @@ export default function IndexPage() {
       setEdges(initialEdges);
       setClickedSave(true);
     }
-  }, []);
+  }, [setNodes, setEdges]);
 
   // Custom node movement constraint handler
   const onNodesChangeCustom = useCallback((changes: NodeChange[]) => {
@@ -100,7 +100,7 @@ export default function IndexPage() {
   }, [onNodesChange]);
 
   // Centralize graph with boundaries
-  const centerGraphWithBoundaries = () => {
+  const centerGraphWithBoundaries = useCallback(() => {
     if (reactFlowInstance) {
       // First center the graph
       reactFlowInstance.fitView({ 
@@ -119,11 +119,11 @@ export default function IndexPage() {
         });
       }
     }
-  };
+  }, [reactFlowInstance]);
 
   useEffect(() => {
     centerGraphWithBoundaries();
-  }, [nodes, edges]);
+  }, [nodes, edges, centerGraphWithBoundaries]);
 
   // Modified version of the original effect to constrain node positions
   useEffect(() => {
@@ -148,7 +148,7 @@ export default function IndexPage() {
         return prevNodes;
       });
     }
-  }, [currentNode]);
+  }, [currentNode, setNodes]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

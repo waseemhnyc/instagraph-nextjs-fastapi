@@ -111,7 +111,7 @@ export const useForceLayout = (
     if (active && initialNodes.length >= 2) {
       applyForceLayout();
     }
-  }, [active, strength, distance]);
+  }, [active, strength, distance, applyForceLayout, initialNodes.length]);
   
   return {
     isRunning,

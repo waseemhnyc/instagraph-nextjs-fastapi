@@ -15,18 +15,18 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
     <div className={cn("pb-6", className)}>
       <div className="space-y-2">
         <div className="py-2">
-          <h2 className="relative px-4 text-lg font-semibold tracking-tight flex items-center gap-2">
-            <ClockIcon className="h-5 w-5 text-primary" />
+          <h2 className="relative flex items-center gap-2 px-4 text-lg font-semibold tracking-tight">
+            <ClockIcon className="size-5 text-primary" />
             Saved Graphs
           </h2>
           <ScrollArea className="h-[650px] px-1">
             <div className="space-y-1 p-2">
               {searchHistory?.length > 0 ? (
                 searchHistory.map((searchItem, i) => (
-                  <div key={`${searchItem.searchValue}-${i}`} className="flex justify-between items-center mb-1 rounded-md hover:bg-accent/50 transition-colors">
+                  <div key={`${searchItem.searchValue}-${i}`} className="mb-1 flex items-center justify-between rounded-md transition-colors hover:bg-accent/50">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start font-medium py-5 px-4 rounded-md"
+                      className="w-full justify-start rounded-md px-4 py-5 font-medium"
                       onClick={() => onHistorySelect(searchItem)}
                     >
                       <span className="truncate">
@@ -37,17 +37,17 @@ export function Sidebar({ className, searchHistory, onHistorySelect }: SidebarPr
                     {/* <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 w-9 p-0 mr-1"
+                      className="mr-1 size-9 p-0"
                       // onClick={() => handleDelete(searchItem)}
                     >
-                      <TrashIcon className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      <TrashIcon className="size-4 text-muted-foreground hover:text-destructive" />
                     </Button> */}
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="py-8 text-center text-muted-foreground">
                   <p>No saved graphs yet</p>
-                  <p className="text-sm mt-1">Search for a topic to create a graph</p>
+                  <p className="mt-1 text-sm">Search for a topic to create a graph</p>
                 </div>
               )}
             </div>
