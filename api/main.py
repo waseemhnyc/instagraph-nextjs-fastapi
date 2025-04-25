@@ -117,7 +117,7 @@ async def get_graph(message: str | None = None):
         ]
 
         node_response = await aclient.chat.completions.create(
-            model=model_4o_mini_2025_04_16,
+            model=model_4o,
             stream=True,
             messages=node_messages,
             response_model=Iterable[Node],
