@@ -24,6 +24,7 @@ model_35 = "gpt-3.5-turbo-1106"
 model_4 = "gpt-4-0613"
 model_4_preview = "gpt-4-1106-preview"
 model_4o = "gpt-4o"
+model_4o_mini_2025_04_16 = "o4-mini-2025-04-16"
 
 app = FastAPI()
 
@@ -116,7 +117,7 @@ async def get_graph(message: str | None = None):
         ]
 
         node_response = await aclient.chat.completions.create(
-            model=model_4o,
+            model=model_4o_mini_2025_04_16,
             stream=True,
             messages=node_messages,
             response_model=Iterable[Node],
